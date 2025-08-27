@@ -4,7 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import Button from '../components/Button.jsx';
 import Input from '../components/Input.jsx';
 import Card from '../components/Card.jsx';
-
+ 
 function Login() {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({ email: '', password: '' });
@@ -70,5 +70,6 @@ function Login() {
 }
 
 export default Login;
+
 
 
