@@ -6,7 +6,7 @@ import Signup from './pages/Signup.jsx';
 import AnimatedBackground from './components/AnimatedBackground.jsx';
 import Header from './components/Header.jsx';
 import Footer from './components/Footer.jsx';
-
+  
 function App() {
   return (
     <Router>
@@ -27,5 +27,6 @@ function App() {
 }
 
 export default App;
+
 
 
