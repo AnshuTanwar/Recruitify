@@ -1,4 +1,3 @@
-
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App.jsx';
@@ -25,6 +24,3 @@ if (rootElement) {
     </StrictMode>
   );
 }
-
-
->>>>>>> c60762e934cc3f975aecd7e2283106669e5adef2
