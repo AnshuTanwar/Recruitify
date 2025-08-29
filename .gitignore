@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # Logs
 logs
 *.log
@@ -443,6 +442,3 @@ FodyWeavers.xsd
 *.msix
 *.msm
 *.msp
-
-.DS_Store
->>>>>>> c60762e934cc3f975aecd7e2283106669e5adef2
