@@ -1,9 +1,6 @@
 {
-<<<<<<< HEAD
   "name": "recruitify",
-=======
   "name": "vite-react-typescript-starter",
->>>>>>> c60762e934cc3f975aecd7e2283106669e5adef2
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -18,7 +15,6 @@
     "lucide-react": "^0.344.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-<<<<<<< HEAD
     "react-router-dom": "^7.8.1"
   },
   "devDependencies": {
@@ -26,14 +22,12 @@
     "@types/react": "^18.3.5",
     "@types/react-dom": "^18.3.0",
     "@vitejs/plugin-react": "^4.3.1",
-=======
     "react-router-dom": "^7.8.1",
     "simple-icons": "^15.11.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.9.1",
     "@vitejs/plugin-react": "^4.7.0",
->>>>>>> c60762e934cc3f975aecd7e2283106669e5adef2
     "autoprefixer": "^10.4.18",
     "eslint": "^9.9.1",
     "eslint-plugin-react-hooks": "^5.1.0-rc.0",
@@ -41,11 +35,8 @@
     "globals": "^15.9.0",
     "postcss": "^8.4.35",
     "tailwindcss": "^3.4.1",
-<<<<<<< HEAD
     "typescript": "^5.5.3",
     "typescript-eslint": "^8.3.0",
-=======
->>>>>>> c60762e934cc3f975aecd7e2283106669e5adef2
     "vite": "^7.1.3"
   }
 }
