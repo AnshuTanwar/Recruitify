@@ -7,7 +7,7 @@ import Card from '../components/Card.jsx';
 import TypewriterText from '../components/TypewriterText.jsx';
 import Input from '../components/Input.jsx';
 import LogoCarousel from '../components/LogoCarousel.jsx';
-
+  
 function Landing() {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({ name: '', email: '', message: '' });
@@ -156,5 +156,6 @@ function Landing() {
 }
 
 export default Landing;
+
 
 
