@@ -7,7 +7,7 @@ import AnimatedBackground from './shared/components/AnimatedBackground.jsx';
 import Header from './shared/components/Header.jsx';
 import Footer from './shared/components/Footer.jsx';
 import ErrorBoundary from './shared/components/ErrorBoundary.jsx';
-
+ 
 // Candidate Pages
 import Dashboard from './candidate/pages/Dashboard.jsx';
 import AppliedJobs from './candidate/pages/AppliedJobs.jsx';
