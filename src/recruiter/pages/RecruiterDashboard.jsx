@@ -4,7 +4,7 @@ import RecruiterLayout from '../components/RecruiterLayout';
 
 function RecruiterDashboard() {
   const stats = [
-    {
+    { 
       title: 'Open Jobs',
       value: '589',
       icon: Briefcase,
