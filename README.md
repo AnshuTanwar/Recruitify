@@ -4,7 +4,7 @@
 A modern, futuristic job portal application built with React, TypeScript, Tailwind CSS, and Framer Motion.
 
 ## Features
-  
+   
 - **Landing Page**: Futuristic design with animated background, typewriter effects, and glassmorphism cards
 - **Authentication**: Role-based signup and login system
 - **Candidate Dashboard**: Complete dashboard with sidebar navigation, job management, and settings
