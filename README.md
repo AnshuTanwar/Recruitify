@@ -1,105 +1,183 @@
-# Recruitify
+# 🧠 Recruitify
 
-Recruitify is a modern web-based job portal built for efficiency and simplicity. It empowers recruiters to automate candidate screening and enables candidates to showcase their profiles with ease. Featuring intelligent resume parsing and skill-matched feeds, Recruitify helps reduce downtime and streamlines job discovery for both recruiters and job seekers.
+![React](https://img.shields.io/badge/Frontend-React.js-61DAFB?logo=react&logoColor=white)
+![Node.js](https://img.shields.io/badge/Backend-Node.js-339933?logo=node.js&logoColor=white)
+![Express](https://img.shields.io/badge/Framework-Express.js-000000?logo=express&logoColor=white)
+![MongoDB](https://img.shields.io/badge/Database-MongoDB-47A248?logo=mongodb&logoColor=white)
+![AWS S3](https://img.shields.io/badge/Storage-AWS%20S3-232F3E?logo=amazon-aws&logoColor=white)
+![Redis](https://img.shields.io/badge/Cache-Redis-DC382D?logo=redis&logoColor=white)
+![License](https://img.shields.io/badge/License-MIT-blue)
+![Status](https://img.shields.io/badge/Status-Active%20Development-brightgreen)
+
+---
+
+Recruitify is a modern web-based job portal built for efficiency and simplicity.  
+It empowers **recruiters** to automate candidate screening and enables **candidates** to showcase their profiles with ease.  
+Featuring intelligent resume parsing and skill-matched feeds, Recruitify helps reduce downtime and streamline job discovery for both recruiters and job seekers.
+
+---
 
 ## 🚀 Features
 
 - **Automatic Resume Parsing & ATS Sorting**  
-  Candidates' resumes are auto-parsed and sorted based on advanced ATS (Applicant Tracking System) algorithms, letting recruiters focus on the best-fit profiles instantly.
+  Candidates’ resumes are auto-parsed and ranked via advanced ATS algorithms, letting recruiters instantly focus on top profiles.
 
 - **Skill-Based Feed Filtering**  
-  Candidates only see jobs that precisely match the skills they possess, eliminating irrelevant listings and doom scrolling.
+  Candidates see only jobs that match their skills — eliminating irrelevant listings and wasted time.
 
 - **Secure Resume Storage**  
-  Candidates can upload and manage PDFs of their resumes securely. Recruiters can fetch resumes for screening and download as needed.
+  Resumes are stored securely on AWS S3, accessible only to authorized recruiters and candidates.
 
 - **Role-Based Dashboards**  
-  Separate dashboards for recruiters and candidates, ensuring specialized workflows and seamless experiences.
+  Separate dashboards for recruiters and candidates, offering tailored experiences for both.
 
 - **Google OAuth & JWT Authentication**  
-  Secure sign-in options with Google OAuth, refresh tokens for session management, and robust password reset flows.
+  Secure login with Google OAuth, JWT-based session management, and password reset workflows.
 
 - **Real-Time Application Status**  
-  Both candidates and recruiters get live updates on application statuses, feedback, and onboarding next steps.
+  Live updates for both candidates and recruiters on application progress and next steps.
+
+---
 
 ## 🗂️ Tech Stack
 
-- **Frontend:** React.js (Vite), Tailwind CSS
-- **Backend:** Node.js, Express.js
-- **Database:** MongoDB (Mongoose ORM)
-- **Authentication:** Passport.js (Google OAuth, JWT)
-- **Cloud & Storage:** AWS S3 (for resume PDFs)
-- **Caching & Queue:** Redis (ATS scoring tasks)
-- **Deployment:** Vercel (Frontend), Render (Backend)
+| Layer | Technology |
+|-------|-------------|
+| **Frontend** | React.js (Vite), Tailwind CSS |
+| **Backend** | Node.js, Express.js |
+| **Database** | MongoDB (Mongoose ORM) |
+| **Authentication** | Passport.js (Google OAuth, JWT) |
+| **Cloud & Storage** | AWS S3 |
+| **Caching & Queue** | Redis (for ATS scoring and async tasks) |
+| **Deployment** | Vercel (Frontend), Render (Backend) |
+
+---
 
 ## 🔄 Core Architecture
 
 - **Decoupled Frontend & Backend**  
-  The frontend (React) and backend (Node/Express) are developed and deployed in separate repositories for flexibility and scalability.
+  Independent repositories for flexibility, scalability, and CI/CD deployment.
 
-- **Redis Queue**  
-  ATS-related compute tasks are processed asynchronously through Redis for fast sorting and ranking.
+- **Redis Queue System**  
+  Handles ATS-related compute tasks asynchronously for performance and ranking accuracy.
 
 - **RESTful API Design**  
-  Organized endpoints for `auth`, `candidate`, `recruiter`, `job`, and `application` with granular role-based access.
+  Endpoints grouped by `auth`, `candidate`, `recruiter`, `job`, and `application` with strict role-based access.
 
-## 📝 Candidate Experience
+---
 
-- Sign up, create profile, and upload resume (PDF).
-- Auto-matching with skill-relevant jobs—no irrelevant postings.
-- Track applications, update status, and communicate securely.
+## 🧑‍💼 Candidate Experience
 
-## 💼 Recruiter Experience
+- Create an account, build a profile, and upload a PDF resume.  
+- Get automatically matched with relevant jobs.  
+- Track and manage job applications easily.
 
-- Create and manage job posts with skill requirements.
-- Instantly view and sort applicants by ATS score (from parsed resumes).
-- Filter, update application statuses, and download resumes.
+---
+
+## 🏢 Recruiter Experience
+
+- Post and manage jobs with skill requirements.  
+- Instantly view applicants sorted by ATS score.  
+- Filter, update application statuses, and download resumes directly.
+
+---
 
 ## 🌐 Demo Links
 
-- **Frontend:** [https://recruitify-pi.vercel.app](https://recruitify-pi.vercel.app)
-- **Backend:** See link below.
+- **Frontend:** [https://recruitify-pi.vercel.app](https://recruitify-pi.vercel.app)  
+- **Backend:** See the link below.
+
+---
 
 ## 📦 Backend Repository
 
-Recruitify’s backend is maintained as a separate repository.
-**[👉 View the Recruitify Backend Repo](https://github.com/AnshuTanwar/Recruitify-Backend)**
+Recruitify’s backend is maintained separately.  
+👉 **[View the Recruitify Backend Repo](https://github.com/AnshuTanwar/Recruitify-Backend)**
+
+---
 
 ## 🛠️ Local Setup
 
-### Setup Instructions
+### Frontend Setup
 
 ```bash
 # Clone the frontend
-git clone https://github.com/AnshuTanwar/Recruitify
+git clone https://github.com/AnshuTanwar/Recruitify.git
+
+# Navigate to project
+cd recruitify-frontend
 
 # Install dependencies
-cd recruitify-frontend
 npm install
 
-# Start development server
+# Start the development server
 npm run dev
+````
 
+### Backend Setup
 
-**Backend Setup:**  
-Clone and configure the backend as per instructions in [the main backend README](https://github.com/AnshuTanwar/Recruitify-Backend).
+Clone and configure the backend following the setup instructions in the
+[Recruitify Backend README](https://github.com/AnshuTanwar/Recruitify-Backend).
 
+---
+
+## ⚙️ Environment Variables
+
+Create a `.env` file in your **backend** directory and set the following:
+
+```bash
+PORT=
+MONGO_URI=
+CLIENT_URI=http://localhost:5174
+JWT_SECRET=h
+JWT_REFRESH_SECRET=S
+GOOGLE_CLIENT_ID=com
+GOOGLE_CLIENT_SECRET=GOk8HZlCFqp2pyt
+MONGO_URI_TEST=mongodb+sr
+EMAILJS_USER=acom
+EMAILJS_PASSWORD=cv
+AWS_REGION=us-
+AWS_ACCESS_KEY_ID=O
+AWS_SECRET_ACCESS_KEY=1cKOJ4tz/
+S3_BUCKET=rec
+S3_PUBLIC_URL=htmazonaws.com
+MAX_RESUME_SIZE_BYTES=50
+
+REDIS_HOST=red.com
+REDIS_PORT=1558
+REDIS_USERNAME=dault
+REDIS_PASSWORD=
+```
+
+---
 
 ## 📚 API Reference
 
-- `POST /api/auth/signup` — Candidate/Recruiter Registration
-- `POST /api/auth/login` — Email/Password Sign-In
-- `GET /api/auth/google` — Google OAuth
-- `POST /api/candidate/resumes` — Resume upload (PDF)
-- `GET /api/candidate/feed` — Skill-matched job feed
-- `POST /api/recruiter/job` — Create job post with required skills
-- `GET /api/recruiter/job/:id/applications` — ATS-sorted applicant view
+| Method | Endpoint                              | Description                             |
+| ------ | ------------------------------------- | --------------------------------------- |
+| `POST` | `/api/auth/signup`                    | Candidate/Recruiter registration        |
+| `POST` | `/api/auth/login`                     | Email/Password sign-in                  |
+| `GET`  | `/api/auth/google`                    | Google OAuth authentication             |
+| `POST` | `/api/candidate/resumes`              | Upload candidate resume (PDF)           |
+| `GET`  | `/api/candidate/feed`                 | Fetch skill-matched job feed            |
+| `POST` | `/api/recruiter/job`                  | Create job post with skill requirements |
+| `GET`  | `/api/recruiter/job/:id/applications` | View ATS-sorted applicants              |
 
-_For complete API routes and usage, check the backend repo documentation._
+*For detailed documentation, refer to the backend repository.*
+
+---
 
 ## 📢 Status
 
-Recruitify is actively being developed. New features and improvements roll out regularly—  
-**Contributions, feedback, and suggestions are welcome!**
+Recruitify is **actively being developed** — new features and improvements roll out regularly.
+💡 **Contributions, feedback, and suggestions are always welcome!**
 
 ---
+
+## 🧾 License
+
+This project is licensed under the [MIT License](LICENSE).
+
+---
+
+⭐ **If you like Recruitify, consider giving it a star on GitHub!**
