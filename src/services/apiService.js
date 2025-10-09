@@ -3,7 +3,7 @@
  * Handles all backend API calls with proper error handling
  */
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://recruitify-backend-f2zw.onrender.com';
+const API_BASE_URL = 'https://recruitify-backend-f2zw.onrender.com';
 
 class ApiService {
   // Helper method to make API calls
