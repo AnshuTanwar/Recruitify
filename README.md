@@ -1,162 +1,105 @@
-
-# Recruitify - AI-Powered Job Portal
-
-A modern, futuristic job portal application built with React, TypeScript, Tailwind CSS, and Framer Motion.
-
-## Features
-
-- **Landing Page**: Futuristic design with animated background, typewriter effects, and glassmorphism cards
-- **Authentication**: Role-based signup and login system
-- **Candidate Dashboard**: Complete dashboard with sidebar navigation, job management, and settings
-- **Responsive Design**: Mobile-first approach with smooth animations
-- **Professional Theme**: Consistent color scheme and typography throughout
-
-## Demo Accounts
-
-### Candidate Account
-- **Email**: candidate@demo.com
-- **Password**: Demo123!
-- **Features**: Access to candidate dashboard with job applications, alerts, and settings
-
-### Recruiter Account
-- **Email**: recruiter@demo.com
-- **Password**: Demo123!
-- **Features**: Full recruiter dashboard with job posting, candidate management, and analytics
-
-## Registration Flows
-
-### Multi-Step Recruiter Registration
-The platform includes a comprehensive 3-step registration process for recruiters:
-
-1. **Company Information Step**:
-   - Company name, address (street, city, state, postal code, country)
-   - Company size and industry selection
-   - Company website and description (minimum 50 characters)
-   - Form validation with real-time error feedback
-
-2. **Recruiter Information Step**:
-   - Personal details (full name, job title)
-   - Work email and phone number
-   - Password creation with confirmation
-   - Show/hide password functionality
-
-3. **Email Verification Step**:
-   - Account summary review
-   - Email verification process simulation
-   - Automatic redirect to recruiter dashboard after verification
-
-### Features:
-- **Progress Tracking**: Visual progress bar showing completion percentage
-- **Form Validation**: Real-time validation with smooth error animations
-- **Responsive Design**: Works seamlessly on all device sizes
-- **Smooth Animations**: Step transitions and micro-interactions
-- **Data Persistence**: Form data maintained across steps
-
-## Getting Started
-
-1. **Install Dependencies**
-   ```bash
-   npm install
-   ```
-
-2. **Start Development Server**
-   ```bash
-   npm run dev
-   ```
-
-3. **Access the Application**
-   - Open your browser to `http://localhost:5173`
-   - Use the demo accounts above to test functionality
-
-## Project Structure
-
-```
-src/
-├── components/          # Reusable UI components
-│   ├── AnimatedBackground.tsx
-│   ├── Button.tsx
-│   ├── Card.tsx
-│   ├── DashboardLayout.tsx
-│   ├── Footer.tsx
-│   ├── Header.tsx
-│   ├── Input.tsx
-│   ├── Sidebar.tsx
-│   └── TypewriterText.tsx
-├── pages/              # Main application pages
-│   ├── Dashboard.tsx
-│   ├── AppliedJobs.tsx
-│   ├── JobAlerts.tsx
-│   ├── Landing.tsx
-│   ├── Login.tsx
-│   ├── Settings.tsx
-│   └── Signup.tsx
-└── App.tsx            # Main application component
-```
-
-## Key Features
-
-### Theme Consistency
-- Gradient backgrounds matching landing page design
-- Consistent color palette (teal, purple, sky blue)
-- Professional typography and spacing
-- Glassmorphism effects throughout
-
-### Dashboard Features
-- **Overview**: Statistics cards, profile completion alerts, recent applications
-- **Applied Jobs**: Comprehensive job listing with status tracking
-- **Job Alerts**: Job recommendations with apply functionality
-- **Settings**: Profile management, resume uploads, account settings
-
-### Recruiter Dashboard Features
-- **Overview**: Job posting statistics, recent job performance, application tracking
-- **Job Management**: Create, edit, delete, and manage job postings
-- **Candidate Pipeline**: Track candidates through different hiring stages
-- **Analytics**: Hiring metrics, time-to-hire, and source effectiveness
-- **Post Job**: Comprehensive job posting form with all necessary fields
-
-### Animations & Interactions
-- Smooth page transitions with Framer Motion
-- Hover effects on all interactive elements
-- Loading states and micro-interactions
-- Responsive design with mobile-first approach
-
-## Technologies Used
-
-- **React 18** with TypeScript
-- **Tailwind CSS** for styling
-- **Framer Motion** for animations
-- **React Router** for navigation
-- **Lucide React** for icons
-- **Vite** for build tooling
-
-## Browser Support
-
-- Chrome (latest)
-- Firefox (latest)
-- Safari (latest)
-- Edge (latest)
-
-## Performance
-
-- Optimized animations (60fps)
-- Lazy loading where appropriate
-- Efficient component structure
-- Mobile-optimized responsive design
 # Recruitify
 
-Recruitify is a scalable, cloud-based job portal designed for recruiters and candidates.  
-It enables recruiters to post job listings, receive and store resumes securely, and filter candidates efficiently.
-Built using modern technologies with IAM-secured access and AWS cloud services, Recruitify ensures performance, scalability, and data integrity.
+Recruitify is a modern web-based job portal built for efficiency and simplicity. It empowers recruiters to automate candidate screening and enables candidates to showcase their profiles with ease. Featuring intelligent resume parsing and skill-matched feeds, Recruitify helps reduce downtime and streamlines job discovery for both recruiters and job seekers.
 
-## Backend Setup
-- A basic **Express.js server** has been set up to handle API requests.
-- **MongoDB connection** is configured to store user, job, and resume data.
-- Environment variables are managed using `.env` for secure database credentials and server configuration.
-- Project structured for future implementation of advanced features like automated resume parsing, recruiter workflows, and role-based authentication.
+## 🚀 Features
 
-## Tech Stack
-- **Frontend:** React.js  
-- **Backend:** Node.js, Express.js  
-- **Database:** MongoDB (Atlas)  
-- **Cloud Services:** AWS (IAM roles, Amplify for frontend deployment, CloudWatch logging)
-Recruitify is a scalable, cloud-based job portal designed for recruiters and candidates. It enables recruiters to post job listings, receive and store resumes securely, and filter candidates efficiently. Built using modern technologies with IAM-secured access and AWS cloud services, Recruitify ensures performance, scalability, and data integrity.
+- **Automatic Resume Parsing & ATS Sorting**  
+  Candidates' resumes are auto-parsed and sorted based on advanced ATS (Applicant Tracking System) algorithms, letting recruiters focus on the best-fit profiles instantly.
+
+- **Skill-Based Feed Filtering**  
+  Candidates only see jobs that precisely match the skills they possess, eliminating irrelevant listings and doom scrolling.
+
+- **Secure Resume Storage**  
+  Candidates can upload and manage PDFs of their resumes securely. Recruiters can fetch resumes for screening and download as needed.
+
+- **Role-Based Dashboards**  
+  Separate dashboards for recruiters and candidates, ensuring specialized workflows and seamless experiences.
+
+- **Google OAuth & JWT Authentication**  
+  Secure sign-in options with Google OAuth, refresh tokens for session management, and robust password reset flows.
+
+- **Real-Time Application Status**  
+  Both candidates and recruiters get live updates on application statuses, feedback, and onboarding next steps.
+
+## 🗂️ Tech Stack
+
+- **Frontend:** React.js (Vite), Tailwind CSS
+- **Backend:** Node.js, Express.js
+- **Database:** MongoDB (Mongoose ORM)
+- **Authentication:** Passport.js (Google OAuth, JWT)
+- **Cloud & Storage:** AWS S3 (for resume PDFs)
+- **Caching & Queue:** Redis (ATS scoring tasks)
+- **Deployment:** Vercel (Frontend), Render (Backend)
+
+## 🔄 Core Architecture
+
+- **Decoupled Frontend & Backend**  
+  The frontend (React) and backend (Node/Express) are developed and deployed in separate repositories for flexibility and scalability.
+
+- **Redis Queue**  
+  ATS-related compute tasks are processed asynchronously through Redis for fast sorting and ranking.
+
+- **RESTful API Design**  
+  Organized endpoints for `auth`, `candidate`, `recruiter`, `job`, and `application` with granular role-based access.
+
+## 📝 Candidate Experience
+
+- Sign up, create profile, and upload resume (PDF).
+- Auto-matching with skill-relevant jobs—no irrelevant postings.
+- Track applications, update status, and communicate securely.
+
+## 💼 Recruiter Experience
+
+- Create and manage job posts with skill requirements.
+- Instantly view and sort applicants by ATS score (from parsed resumes).
+- Filter, update application statuses, and download resumes.
+
+## 🌐 Demo Links
+
+- **Frontend:** [https://recruitify-pi.vercel.app](https://recruitify-pi.vercel.app)
+- **Backend:** See link below.
+
+## 📦 Backend Repository
+
+Recruitify’s backend is maintained as a separate repository.
+**[👉 View the Recruitify Backend Repo](https://github.com/AnshuTanwar/Recruitify-Backend)**
+
+## 🛠️ Local Setup
+
+### Setup Instructions
+
+```bash
+# Clone the frontend
+git clone https://github.com/AnshuTanwar/Recruitify
+
+# Install dependencies
+cd recruitify-frontend
+npm install
+
+# Start development server
+npm run dev
+
+
+**Backend Setup:**  
+Clone and configure the backend as per instructions in [the main backend README](https://github.com/AnshuTanwar/Recruitify-Backend).
+
+
+## 📚 API Reference
+
+- `POST /api/auth/signup` — Candidate/Recruiter Registration
+- `POST /api/auth/login` — Email/Password Sign-In
+- `GET /api/auth/google` — Google OAuth
+- `POST /api/candidate/resumes` — Resume upload (PDF)
+- `GET /api/candidate/feed` — Skill-matched job feed
+- `POST /api/recruiter/job` — Create job post with required skills
+- `GET /api/recruiter/job/:id/applications` — ATS-sorted applicant view
+
+_For complete API routes and usage, check the backend repo documentation._
+
+## 📢 Status
+
+Recruitify is actively being developed. New features and improvements roll out regularly—  
+**Contributions, feedback, and suggestions are welcome!**
+
+---
