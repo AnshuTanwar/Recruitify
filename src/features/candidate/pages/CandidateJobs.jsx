@@ -21,6 +21,7 @@ import { useNavigate } from 'react-router-dom';
 import DashboardLayout from '../components/DashboardLayout.jsx';
 import SkillMatchingService from '../../../services/skillMatchingService.js';
 import ApiService from '../../../services/apiService.js';
+import Modal from '../../../components/ui/Modal.jsx';
 
 const CandidateJobs = () => {
   const navigate = useNavigate();
@@ -35,6 +36,8 @@ const CandidateJobs = () => {
   const [allJobs, setAllJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [selectedJobDetails, setSelectedJobDetails] = useState(null);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
 
   // Fetch candidate profile and jobs from backend
   useEffect(() => {
@@ -95,6 +98,26 @@ const CandidateJobs = () => {
     if (percentage >= 80) return <CheckCircle className="w-4 h-4" />;
     if (percentage >= 60) return <Target className="w-4 h-4" />;
     return <AlertCircle className="w-4 h-4" />;
+  };
+
+  const handleViewDetails = async (jobId) => {
+    try {
+      setLoading(true);
+      const jobDetails = await ApiService.getJobDetails(jobId);
+      if (!jobDetails) throw new Error('Job details not found');
+      setSelectedJobDetails(jobDetails);
+      setShowDetailsModal(true);
+    } catch (err) {
+      console.error('Failed to load job details:', err);
+      setError(err.message || 'Failed to load job details');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const closeDetailsModal = () => {
+    setShowDetailsModal(false);
+    setSelectedJobDetails(null);
   };
 
   return (
@@ -305,7 +328,7 @@ const CandidateJobs = () => {
                               {job.applications || 0} applications
                             </span>
                             <motion.button
-                              onClick={() => navigate(`/dashboard/jobs/${job._id}`)}
+                              onClick={() => handleViewDetails(job._id)}
                               className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium flex items-center justify-center space-x-2 w-full sm:w-auto order-2 sm:order-2"
                               whileHover={{ scale: 1.05 }}
                               whileTap={{ scale: 0.95 }}
@@ -335,6 +358,53 @@ const CandidateJobs = () => {
               </motion.div>
             ))}
           </div>
+
+          {/* Job Details Modal */}
+          <Modal
+            isOpen={showDetailsModal}
+            onClose={closeDetailsModal}
+            title={selectedJobDetails?.jobName || 'Job Details'}
+            size="lg"
+          >
+            {selectedJobDetails ? (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900">{selectedJobDetails.jobName}</h3>
+                    <p className="text-sm text-gray-600">{selectedJobDetails.companyName || 'Company Name'}</p>
+                  </div>
+                  <div className="text-sm text-gray-500">{new Date(selectedJobDetails.createdAt).toLocaleDateString()}</div>
+                </div>
+
+                <div className="text-gray-700">
+                  <p>{selectedJobDetails.description}</p>
+                </div>
+
+                <div>
+                  <h4 className="text-sm font-medium text-gray-800 mb-2">Required Skills</h4>
+                  <div className="flex flex-wrap gap-2">
+                    {(selectedJobDetails.skillsRequired || []).map((s, i) => (
+                      <span key={i} className="px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs">{s}</span>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between pt-4 border-t">
+                  <div className="text-sm text-gray-600">
+                    <div>Location: {selectedJobDetails.location || 'Remote'}</div>
+                    <div>Type: {selectedJobDetails.type || 'Full Time'}</div>
+                    <div>Applications: {selectedJobDetails.applications || 0}</div>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <button onClick={closeDetailsModal} className="px-4 py-2 bg-gray-200 rounded-lg">Close</button>
+                    <button onClick={() => navigate(`/dashboard/apply/${selectedJobDetails._id}`)} className="px-4 py-2 bg-teal-600 text-white rounded-lg">Apply</button>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="text-center text-gray-600">Loading...</div>
+            )}
+          </Modal>
 
           {/* Empty State */}
           {filteredJobs.length === 0 && (

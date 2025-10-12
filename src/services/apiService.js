@@ -250,6 +250,14 @@ class ApiService {
     });
   }
 
+  // Get job details for a single job
+  static async getJobDetails(jobId) {
+    return this.makeAuthenticatedRequest(`/api/candidate/jobs/${jobId}`, {
+      method: "GET",
+    });
+  }
+
+
 
   // ==================== RECRUITER APIs ====================
   
