@@ -28,32 +28,29 @@ const Input = ({
           onBlur={() => setIsFocused(false)}
           placeholder={placeholder}
           required={required}
-          className={`w-full px-3 xs:px-3.5 sm:px-4 py-2 xs:py-2.5 sm:py-3 text-xs xs:text-sm sm:text-base bg-white/10 backdrop-blur-sm rounded-lg border ${
-            error ? 'border-red-400' : 'border-white/20'
-          } text-white placeholder-white/50 focus:outline-none focus:border-teal-400 transition-all duration-300`}
+          className={`w-full px-4 py-4 text-sm sm:text-base bg-white/10 backdrop-blur-sm rounded-xl border ${
+            error ? 'border-red-400/60' : 'border-white/20'
+          } text-white placeholder-white/50 focus:outline-none focus:border-teal-400/80 focus:bg-white/15 hover:bg-white/12 transition-all duration-300 shadow-lg`}
         />
         
-        <motion.label
-          className={`absolute left-3 xs:left-3.5 sm:left-4 text-white/70 pointer-events-none transition-all duration-300 ${
-            isFocused || value
-              ? '-top-2 text-xs bg-gradient-to-br from-slate-900 via-purple-800 to-sky-400 px-2 rounded'
-              : 'top-2 xs:top-2.5 sm:top-3 text-xs xs:text-xs sm:text-sm'
-          }`}
-          animate={{
-            y: isFocused || value ? -8 : 0,
-            scale: isFocused || value ? 0.9 : 1,
-          }}
-          transition={{ duration: 0.2 }}
-        >
-          {label}
-        </motion.label>
+        {(isFocused || value) && (
+          <motion.label
+            className="absolute -top-3 left-4 text-xs bg-gradient-to-r from-teal-600 to-purple-600 px-3 py-1 rounded-lg backdrop-blur-sm shadow-lg font-medium text-white pointer-events-none"
+            initial={{ opacity: 0, y: 10, scale: 0.8 }}
+            animate={{ opacity: 1, y: -2, scale: 1 }}
+            exit={{ opacity: 0, y: 10, scale: 0.8 }}
+            transition={{ duration: 0.3, ease: "easeOut" }}
+          >
+            {label}
+          </motion.label>
+        )}
         
         {(isFocused || value) && (
           <motion.div
-            className="absolute inset-0 rounded-lg border-2 border-teal-400/50 pointer-events-none"
-            initial={{ opacity: 0, scale: 0.8 }}
+            className="absolute inset-0 rounded-xl border-2 border-teal-400/30 pointer-events-none shadow-lg shadow-teal-400/20"
+            initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.8 }}
+            exit={{ opacity: 0, scale: 0.95 }}
             transition={{ duration: 0.2 }}
           />
         )}

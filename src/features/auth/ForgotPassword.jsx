@@ -28,11 +28,18 @@ function ForgotPassword() {
     setErrors({});
     
     try {
+      console.log('Attempting to send forgot password request for:', email);
       // Call backend API for forgot password
-      await ApiService.forgotPassword(email);
+      const response = await ApiService.forgotPassword(email);
+      console.log('Forgot password response:', response);
       setIsEmailSent(true);
     } catch (error) {
       console.error('Forgot password error:', error);
+      console.error('Error details:', {
+        message: error.message,
+        stack: error.stack,
+        name: error.name
+      });
       setErrors({ email: error.message || 'Failed to send reset email. Please try again.' });
     } finally {
       setIsSubmitting(false);
@@ -105,26 +112,42 @@ function ForgotPassword() {
         transition={{ duration: 0.5 }} 
         className="relative min-h-screen flex items-center justify-center px-3 xs:px-4 sm:px-6 lg:px-8 pt-12 xs:pt-14 sm:pt-16"
       >
-        <Card className="w-full max-w-xs xs:max-w-sm sm:max-w-md">
-        <div className="text-center mb-4 xs:mb-6 sm:mb-8">
+        <Card className="w-full max-w-md mx-auto">
+        <div className="text-center mb-8">
           <motion.div
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
-            className="w-16 h-16 bg-teal-500/20 rounded-full flex items-center justify-center mx-auto mb-4"
+            initial={{ scale: 0, rotate: -180 }}
+            animate={{ scale: 1, rotate: 0 }}
+            transition={{ delay: 0.2, type: "spring", stiffness: 200, damping: 15 }}
+            className="w-20 h-20 bg-gradient-to-br from-teal-500/30 to-purple-500/30 rounded-full flex items-center justify-center mx-auto mb-6 backdrop-blur-sm border border-white/10 shadow-lg"
           >
-            <Mail className="w-8 h-8 text-teal-400" />
+            <Mail className="w-10 h-10 text-teal-400" />
           </motion.div>
           
-          <h1 className="text-xl xs:text-2xl sm:text-3xl font-bold text-white mb-1 xs:mb-2 leading-tight">
+          <motion.h1 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="text-2xl sm:text-3xl font-bold text-white mb-3 leading-tight"
+          >
             Forgot Password?
-          </h1>
-          <p className="text-xs xs:text-sm sm:text-base text-white/70">
+          </motion.h1>
+          <motion.p 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+            className="text-sm sm:text-base text-white/70 leading-relaxed"
+          >
             Enter your email address and we'll send you a link to reset your password.
-          </p>
+          </motion.p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4 xs:space-y-6">
+        <motion.form 
+          onSubmit={handleSubmit} 
+          className="space-y-6"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5 }}
+        >
           <Input 
             label="Email Address" 
             type="email" 
@@ -138,29 +161,37 @@ function ForgotPassword() {
           <Button 
             type="submit" 
             loading={isSubmitting} 
-            className="w-full text-sm xs:text-base py-2.5 xs:py-3"
+            className="w-full text-base py-4 font-semibold"
           >
-            {isSubmitting ? 'Sending...' : 'Send Reset Link'}
+            {isSubmitting ? 'Sending Reset Link...' : 'Send Reset Link'}
           </Button>
-        </form>
+        </motion.form>
 
         <motion.div 
-          className="mt-6 sm:mt-8 text-center space-y-4" 
+          className="mt-8 text-center space-y-5" 
           initial={{ opacity: 0, y: 20 }} 
           animate={{ opacity: 1, y: 0 }} 
-          transition={{ delay: 0.3 }}
+          transition={{ delay: 0.6 }}
         >
-          <Link 
-            to="/login" 
-            className="inline-flex items-center text-xs sm:text-sm text-teal-400 hover:text-teal-300 transition-colors duration-300"
+          <motion.div
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
           >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Login
-          </Link>
+            <Link 
+              to="/login" 
+              className="inline-flex items-center text-sm text-teal-400 hover:text-teal-300 transition-all duration-300 px-4 py-2 rounded-lg hover:bg-white/5 backdrop-blur-sm"
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back to Login
+            </Link>
+          </motion.div>
           
-          <div className="text-xs sm:text-sm text-white/60">
+          <div className="text-sm text-white/60 leading-relaxed">
             Don't have an account?{' '}
-            <Link to="/signup" className="text-teal-400 hover:text-teal-300 transition-colors duration-300 font-semibold">
+            <Link 
+              to="/signup" 
+              className="text-teal-400 hover:text-teal-300 transition-colors duration-300 font-semibold hover:underline underline-offset-2"
+            >
               Sign up here
             </Link>
           </div>

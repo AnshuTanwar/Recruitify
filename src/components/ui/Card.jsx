@@ -10,11 +10,11 @@ const Card = ({ children, className = '', hover, ...props }) => {
 
   return (
     <motion.div
-      className={`bg-white/10 backdrop-blur-md border border-white/20 rounded-lg xs:rounded-xl p-3 xs:p-4 sm:p-5 md:p-6 shadow-xl ${className}`}
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-      whileHover={hover ? { scale: 1.02, y: -2 } : undefined}
+      className={`bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl p-6 sm:p-8 shadow-2xl shadow-black/20 ${className}`}
+      initial={{ opacity: 0, y: 20, scale: 0.95 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      transition={{ duration: 0.6, ease: "easeOut" }}
+      whileHover={hover ? { scale: 1.02, y: -4, boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.4)" } : undefined}
       {...domProps}
     >
       {children}

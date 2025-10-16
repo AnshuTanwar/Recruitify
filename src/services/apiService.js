@@ -3,7 +3,10 @@
  * Handles all backend API calls with proper error handling
  */
 
-const API_BASE_URL = 'https://recruitify-backend-f2zw.onrender.com';
+// Use local backend in development, deployed backend in production
+const API_BASE_URL = process.env.NODE_ENV === 'development' 
+  ? 'http://localhost:5050' 
+  : 'https://recruitify-backend-f2zw.onrender.com';
 
 class ApiService {
   // Helper method to make API calls
@@ -111,10 +114,27 @@ class ApiService {
   }
 
   static async forgotPassword(email) {
-    return this.makeRequest('/api/auth/forgot-password', {
-      method: 'POST',
-      body: JSON.stringify({ email }),
-    });
+    console.log('Making forgot password request to:', `${API_BASE_URL}/api/auth/forgot-password`);
+    
+    // Add timeout for slow backend responses
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+    
+    try {
+      const response = await this.makeRequest('/api/auth/forgot-password', {
+        method: 'POST',
+        body: JSON.stringify({ email }),
+        signal: controller.signal,
+      });
+      clearTimeout(timeoutId);
+      return response;
+    } catch (error) {
+      clearTimeout(timeoutId);
+      if (error.name === 'AbortError') {
+        throw new Error('Request timeout. The server might be sleeping. Please try again in a moment.');
+      }
+      throw error;
+    }
   }
 
   static async resetPassword(userId, token, newPassword) {
