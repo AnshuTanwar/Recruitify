@@ -143,11 +143,11 @@ function Signup() {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-3 xs:space-y-4 sm:space-y-6">
-          <Input label="Full Name" type="text" value={formData.name} onChange={(v) => setFormData({ ...formData, name: v })} error={errors.name} required />
-          <Input label="Email Address" type="email" value={formData.email} onChange={(v) => setFormData({ ...formData, email: v })} error={errors.email} required />
+          <Input label="Full Name" type="text" value={formData.name} onChange={(v) => setFormData({ ...formData, name: v })} error={errors.name} required placeholder="Enter your full name" />
+          <Input label="Email Address" type="email" value={formData.email} onChange={(v) => setFormData({ ...formData, email: v })} error={errors.email} required placeholder="Enter your email address" />
           
           <div>
-            <Input label="Password" type="password" value={formData.password} onChange={(v) => setFormData({ ...formData, password: v })} error={errors.password} required />
+            <Input label="Password" type="password" value={formData.password} onChange={(v) => setFormData({ ...formData, password: v })} error={errors.password} required placeholder="Create a strong password" />
             {formData.password && (
               <motion.div
                 className="mt-2 space-y-2"
@@ -173,7 +173,7 @@ function Signup() {
             )}
           </div>
 
-          <Input label="Confirm Password" type="password" value={formData.confirmPassword} onChange={(v) => setFormData({ ...formData, confirmPassword: v })} error={errors.confirmPassword} required />
+          <Input label="Confirm Password" type="password" value={formData.confirmPassword} onChange={(v) => setFormData({ ...formData, confirmPassword: v })} error={errors.confirmPassword} required placeholder="Confirm your password" />
 
           {/* Role Selection */}
           <div className="space-y-2 xs:space-y-3">

@@ -155,7 +155,6 @@ function ForgotPassword() {
             onChange={setEmail} 
             error={errors.email} 
             required 
-            placeholder="Enter your email address"
           />
           
           <Button 

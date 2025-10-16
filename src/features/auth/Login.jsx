@@ -106,8 +106,8 @@ function Login() {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-3 xs:space-y-4 sm:space-y-6">
-          <Input label="Email Address" type="email" value={formData.email} onChange={(v) => setFormData({ ...formData, email: v })} error={errors.email} required />
-          <Input label="Password" type="password" value={formData.password} onChange={(v) => setFormData({ ...formData, password: v })} error={errors.password} required />
+          <Input label="Email Address" type="email" value={formData.email} onChange={(v) => setFormData({ ...formData, email: v })} error={errors.email} required placeholder="Enter your email address" />
+          <Input label="Password" type="password" value={formData.password} onChange={(v) => setFormData({ ...formData, password: v })} error={errors.password} required placeholder="Enter your password" />
           
           {/* Forgot Password Link */}
           <div className="text-right">

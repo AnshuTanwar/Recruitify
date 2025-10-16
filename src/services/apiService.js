@@ -4,9 +4,7 @@
  */
 
 // Use local backend in development, deployed backend in production
-const API_BASE_URL = process.env.NODE_ENV === 'development' 
-  ? 'http://localhost:5050' 
-  : 'https://recruitify-backend-f2zw.onrender.com';
+const API_BASE_URL ='https://recruitify-backend-f2zw.onrender.com';
 
 class ApiService {
   // Helper method to make API calls
@@ -180,16 +178,48 @@ class ApiService {
         throw new Error('No token found');
       }
       
-      // Make a simple request to test-redis endpoint (no auth required)
-      // This validates that backend is accessible
-      const response = await fetch(`${API_BASE_URL}/api/test-redis`);
+      // Make an authenticated request to validate the token
+      // Use a lightweight endpoint that requires authentication
+      const response = await fetch(`${API_BASE_URL}/api/candidate/profile`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include'
+      });
+      
       if (response.ok) {
         return true;
+      } else if (response.status === 401 || response.status === 403) {
+        // Token is expired or invalid, try to refresh
+        console.log('Access token expired, attempting refresh...');
+        return await this.attemptTokenRefresh();
       } else {
-        throw new Error('Backend not accessible');
+        throw new Error('Token validation failed');
       }
     } catch (error) {
       console.warn('Token validation failed:', error);
+      // Try to refresh token as fallback
+      return await this.attemptTokenRefresh();
+    }
+  }
+
+  // Helper method to attempt token refresh
+  static async attemptTokenRefresh() {
+    try {
+      console.log('Attempting to refresh token...');
+      const refreshResult = await this.refreshToken();
+      
+      if (refreshResult && refreshResult.accessToken) {
+        localStorage.setItem('authToken', refreshResult.accessToken);
+        console.log('✅ Token refreshed successfully');
+        return true;
+      } else {
+        throw new Error('No access token in refresh response');
+      }
+    } catch (refreshError) {
+      console.warn('❌ Token refresh failed:', refreshError);
       return false;
     }
   }

@@ -31,18 +31,19 @@ export const AuthProvider = ({ children }) => {
 
       if (token && userData && userType && token !== 'null' && token !== 'undefined') {
         try {
-          // Verify token is still valid
-          const isTokenValid = await ApiService.validateToken();
+          const parsedUserData = JSON.parse(userData);
+          
+          // Verify token is still valid with role-specific validation
+          const isTokenValid = await validateTokenForRole(parsedUserData.role);
           
           if (isTokenValid) {
             // Token is valid, restore authentication state
-            const parsedUserData = JSON.parse(userData);
             setUser(parsedUserData);
             setIsAuthenticated(true);
             console.log('✅ User authenticated on refresh:', parsedUserData);
           } else {
-            // Token is invalid or expired
-            console.warn('⚠️ Token validation failed');
+            // Token is invalid or expired and refresh failed
+            console.warn('⚠️ Token validation and refresh failed');
             clearAuthData();
           }
         } catch (authError) {
@@ -59,6 +60,78 @@ export const AuthProvider = ({ children }) => {
       clearAuthData();
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  // Validate token based on user role
+  const validateTokenForRole = async (userRole) => {
+    try {
+      const token = localStorage.getItem('authToken');
+      if (!token || token === 'null' || token === 'undefined') {
+        return false;
+      }
+
+      let endpoint;
+      // Choose appropriate endpoint based on user role
+      switch (userRole?.toLowerCase()) {
+        case 'candidate':
+          endpoint = '/api/candidate/profile';
+          break;
+        case 'recruiter':
+          endpoint = '/api/recruiter/profile';
+          break;
+        case 'admin':
+          endpoint = '/api/admin/overview';
+          break;
+        default:
+          // Fallback to a general endpoint
+          endpoint = '/api/candidate/profile';
+      }
+
+      const response = await fetch(`${process.env.NODE_ENV === 'development' ? 'http://localhost:5050' : 'https://recruitify-backend-f2zw.onrender.com'}${endpoint}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include'
+      });
+
+      if (response.ok) {
+        return true;
+      } else if (response.status === 401 || response.status === 403) {
+        // Token expired, try to refresh
+        console.log('Access token expired, attempting refresh...');
+        try {
+          const refreshResult = await ApiService.refreshToken();
+          if (refreshResult && refreshResult.accessToken) {
+            localStorage.setItem('authToken', refreshResult.accessToken);
+            console.log('✅ Token refreshed successfully in AuthContext');
+            return true;
+          }
+          return false;
+        } catch (refreshError) {
+          console.warn('❌ Token refresh failed in AuthContext:', refreshError);
+          return false;
+        }
+      } else {
+        return false;
+      }
+    } catch (error) {
+      console.warn('Token validation failed:', error);
+      // Try to refresh as fallback
+      try {
+        const refreshResult = await ApiService.refreshToken();
+        if (refreshResult && refreshResult.accessToken) {
+          localStorage.setItem('authToken', refreshResult.accessToken);
+          console.log('✅ Token refreshed successfully in AuthContext (fallback)');
+          return true;
+        }
+        return false;
+      } catch (refreshError) {
+        console.warn('Token refresh also failed:', refreshError);
+        return false;
+      }
     }
   };
 
