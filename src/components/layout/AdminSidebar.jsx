@@ -3,14 +3,11 @@ import { motion } from 'framer-motion';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
   LayoutDashboard, 
-  Users, 
   BarChart3, 
-  Settings, 
   LogOut, 
-  Menu, 
-  X,
   User,
-  Zap
+  Zap,
+  AlertTriangle
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext.jsx';
 
@@ -20,15 +17,9 @@ const AdminSidebar = ({ onMobileClose, isMobileMenuOpen }) => {
 
   const menuItems = [
     {
-      name: 'Overview',
+      name: 'Dashboard',
       path: '/admin/dashboard',
       icon: LayoutDashboard,
-      count: null
-    },
-    {
-      name: 'User Management',
-      path: '/admin/users',
-      icon: Users,
       count: null
     },
     {
@@ -38,15 +29,9 @@ const AdminSidebar = ({ onMobileClose, isMobileMenuOpen }) => {
       count: null
     },
     {
-      name: 'Profile',
-      path: '/admin/profile',
-      icon: User,
-      count: null
-    },
-    {
-      name: 'Settings',
-      path: '/admin/settings',
-      icon: Settings,
+      name: 'Reports',
+      path: '/admin/reports',
+      icon: AlertTriangle,
       count: null
     }
   ];

@@ -26,10 +26,8 @@ const ApplyNow = () => {
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [uploadedResume, setUploadedResume] = useState(null);
   const [existingResumes, setExistingResumes] = useState([]);
   const [selectedResumeKey, setSelectedResumeKey] = useState('');
-  const [isUploadingResume, setIsUploadingResume] = useState(false);
   const [jobData, setJobData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -72,28 +70,40 @@ const ApplyNow = () => {
         setLoading(true);
         setError(null);
         
-        // Get job data from candidate job feed since individual job endpoint doesn't exist
-        const [profileResponse, jobsResponse] = await Promise.all([
+        console.log('Fetching job data for ID:', id);
+        
+        // Validate job ID
+        if (!id || id === 'undefined') {
+          throw new Error('Invalid job ID');
+        }
+        
+        // Get job data using dedicated job details endpoint
+        const [profileResponse, jobResponse] = await Promise.all([
           ApiService.getCandidateProfile(),
-          ApiService.getCandidateJobFeed()
+          ApiService.getJobDetails(id)
         ]);
         
         setCandidateProfile(profileResponse);
         
-        // Resume endpoints are not implemented on backend yet
-        setExistingResumes([]);
-        
-        // Find the specific job from the job feed
-        const foundJob = jobsResponse.find(job => job._id === id);
-        
-        if (foundJob) {
-          setJobData(foundJob);
+        // Set job data from the dedicated endpoint (backend returns {job: {...}})
+        if (jobResponse && jobResponse.job) {
+          setJobData(jobResponse.job);
         } else {
-          // If job not found in feed, it might not match candidate's skills
-          throw new Error('Job not found or not available for your skill set');
+          console.error('Job response:', jobResponse);
+          throw new Error('Job not found or invalid response');
         }
+        
+        // Get resumes from candidate profile (they're included in the profile response)
+        if (profileResponse && profileResponse.resumes && Array.isArray(profileResponse.resumes)) {
+          setExistingResumes(profileResponse.resumes);
+          console.log('Loaded resumes from profile:', profileResponse.resumes);
+        } else {
+          console.log('No resumes found in profile');
+          setExistingResumes([]);
+        }
+        
       } catch (err) {
-        console.error('Error fetching data:', err);
+        console.error('Error fetching job data:', err);
         setError(err.message || 'Failed to load job data');
       } finally {
         setLoading(false);
@@ -111,14 +121,15 @@ const ApplyNow = () => {
       // Prepare application data for backend
       const applicationData = {
         coverLetter: formData.coverLetter || ''
-        // resumeKey is optional now since resume endpoints are not implemented
-        // Backend has been updated to allow applications without resume
       };
 
-      // Don't send resumeKey since we don't have real resume uploads yet
+      // Add resume key if a resume is selected
+      if (selectedResumeKey) {
+        applicationData.resumeKey = selectedResumeKey;
+      }
 
-      // Submit application via API
-      const response = await ApiService.applyToJob(jobData._id, applicationData);
+      // Submit application via API (backend returns id, not _id)
+      const response = await ApiService.applyToJob(jobData.id, applicationData);
       
       console.log('Application submitted successfully:', response);
     } catch (err) {
@@ -133,7 +144,28 @@ const ApplyNow = () => {
   };
 
   const nextStep = () => {
-    if (currentStep < 4) setCurrentStep(currentStep + 1);
+    console.log('Next step clicked. Current step:', currentStep);
+    console.log('Form data experience:', formData.experience);
+    
+    // Validate step 2 (professional information)
+    if (currentStep === 2 && !formData.experience) {
+      console.log('Validation failed: No experience selected');
+      setError('Please select your years of experience to continue.');
+      return;
+    }
+    
+    // Validate step 3 (resume selection)
+    if (currentStep === 3 && !selectedResumeKey) {
+      console.log('Validation failed: No resume selected');
+      setError('Please select a resume to continue.');
+      return;
+    }
+    
+    if (currentStep < 4) {
+      console.log('Validation passed, moving to next step');
+      setError(null);
+      setCurrentStep(currentStep + 1);
+    }
   };
 
   const prevStep = () => {
@@ -148,62 +180,13 @@ const ApplyNow = () => {
     }));
   };
 
-  // Handle file upload for resume
-  const handleFileUpload = async (event) => {
-    const file = event.target.files[0];
-    if (file) {
-      // Validate file type
-      const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
-      if (!allowedTypes.includes(file.type)) {
-        setError('Please upload a PDF, DOC, or DOCX file');
-        return;
-      }
 
-      // Validate file size (5MB limit)
-      const maxSize = 5 * 1024 * 1024; // 5MB in bytes
-      if (file.size > maxSize) {
-        setError('File size must be less than 5MB');
-        return;
-      }
-
-      // Format file size for display
-      const formatFileSize = (bytes) => {
-        if (bytes === 0) return '0 Bytes';
-        const k = 1024;
-        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-        const i = Math.floor(Math.log(bytes) / Math.log(k));
-        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-      };
-
-      // Resume upload endpoints are not implemented yet, so we'll store locally
-      setIsUploadingResume(true);
-      setError(null);
-
-      // Simulate upload delay for better UX
-      setTimeout(() => {
-        // Set uploaded resume with local file reference
-        setUploadedResume({
-          file: file,
-          name: file.name,
-          size: formatFileSize(file.size),
-          key: `local_${file.name}_${Date.now()}` // Local reference key
-        });
-
-        // Clear selected resume from existing ones since we uploaded a new one
-        setSelectedResumeKey('');
-        setIsUploadingResume(false);
-        
-        // Show info message about local storage
-        setError('Resume stored locally. Upload service will be available in future updates.');
-      }, 1000);
-    }
-  };
 
   // Define application steps
   const steps = [
     { id: 1, title: 'Personal Info', icon: User, description: 'Basic information' },
-    { id: 2, title: 'Resume Upload', icon: FileText, description: 'Upload your resume' },
-    { id: 3, title: 'Cover Letter', icon: Mail, description: 'Write cover letter' },
+    { id: 2, title: 'Professional Info', icon: Briefcase, description: 'Work experience' },
+    { id: 3, title: 'Resume & Cover Letter', icon: FileText, description: 'Select resume & write cover letter' },
     { id: 4, title: 'Review & Submit', icon: CheckCircle, description: 'Final review' }
   ];
 
@@ -219,21 +202,32 @@ const ApplyNow = () => {
     );
   }
 
-  // Error state
-  if (error || !jobData) {
+  // Error state - only show if job data failed to load
+  if (!jobData && !loading) {
     return (
       <DashboardLayout>
         <div className="bg-red-500/10 border border-red-400/20 rounded-xl p-6 text-center">
           <div className="text-red-400 mb-2">⚠️ Error Loading Job</div>
-          <p className="text-red-300 text-sm mb-4">{error || 'Job not found or not available for your skill set'}</p>
-          <motion.button
-            onClick={() => navigate('/dashboard/jobs')}
-            className="bg-teal-600 hover:bg-teal-700 text-white px-6 py-3 rounded-lg font-medium transition-colors duration-300"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            Back to Jobs
-          </motion.button>
+          <p className="text-red-300 text-sm mb-2">{error || 'Job not found or not available'}</p>
+          <p className="text-red-200 text-xs mb-4">Job ID: {id}</p>
+          <div className="space-y-2">
+            <motion.button
+              onClick={() => window.location.reload()}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors duration-300 mr-2"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              Retry
+            </motion.button>
+            <motion.button
+              onClick={() => navigate('/dashboard/jobs')}
+              className="bg-teal-600 hover:bg-teal-700 text-white px-6 py-3 rounded-lg font-medium transition-colors duration-300"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              Back to Jobs
+            </motion.button>
+          </div>
         </div>
       </DashboardLayout>
     );
@@ -416,6 +410,19 @@ const ApplyNow = () => {
                 >
                   <h2 className="text-2xl font-bold text-gray-900 mb-6">Professional Information</h2>
                   
+                  {/* Error Display */}
+                  {error && (
+                    <div className="border border-red-200 rounded-lg p-4 mb-6 bg-red-50">
+                      <div className="flex items-start space-x-3">
+                        <AlertCircle className="w-5 h-5 text-red-600 mt-0.5" />
+                        <div>
+                          <h3 className="font-medium text-red-900">Validation Error</h3>
+                          <p className="text-sm mt-1 text-red-700">{error}</p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">Current Position</label>
@@ -497,6 +504,16 @@ const ApplyNow = () => {
                 >
                   <h2 className="text-2xl font-bold text-gray-900 mb-6">Resume & Cover Letter</h2>
                   
+                  {/* Debug info */}
+                  <div className="mb-4 p-3 bg-gray-100 rounded-lg text-sm">
+                    <strong>Debug Info:</strong> Found {existingResumes.length} resumes
+                    {existingResumes.length > 0 && (
+                      <div className="mt-1">
+                        Resume names: {existingResumes.map(r => r.originalName || r.name || 'Unknown').join(', ')}
+                      </div>
+                    )}
+                  </div>
+                  
                   {/* Error/Warning Display */}
                   {error && (
                     <div className={`border rounded-lg p-4 mb-6 ${
@@ -539,26 +556,25 @@ const ApplyNow = () => {
                     </div>
                   )}
                   
-                  {/* Resume Selection/Upload */}
+                  {/* Resume Selection */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Resume/CV *</label>
                     
-                    {/* Existing Resumes */}
-                    {existingResumes.length > 0 && (
-                      <div className="mb-4">
-                        <h4 className="text-sm font-medium text-gray-700 mb-2">Select from your uploaded resumes:</h4>
-                        <div className="space-y-2">
+                    {existingResumes.length > 0 ? (
+                      <div>
+                        <h4 className="text-sm font-medium text-gray-700 mb-3">Select from your uploaded resumes:</h4>
+                        <div className="space-y-3">
                           {existingResumes.map((resume) => (
                             <div
                               key={resume.key}
-                              className={`flex items-center justify-between p-3 border rounded-lg cursor-pointer transition-colors ${
+                              className={`flex items-center justify-between p-4 border rounded-lg cursor-pointer transition-all duration-200 ${
                                 selectedResumeKey === resume.key
-                                  ? 'border-teal-500 bg-teal-50'
-                                  : 'border-gray-300 hover:border-gray-400'
+                                  ? 'border-teal-500 bg-teal-50 shadow-sm'
+                                  : 'border-gray-300 hover:border-gray-400 hover:shadow-sm'
                               }`}
                               onClick={() => {
                                 setSelectedResumeKey(resume.key);
-                                setUploadedResume(null);
+                                setError(null);
                               }}
                             >
                               <div className="flex items-center space-x-3">
@@ -578,62 +594,25 @@ const ApplyNow = () => {
                             </div>
                           ))}
                         </div>
-                        <div className="text-center my-4">
-                          <span className="text-gray-500 text-sm">or</span>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Upload New Resume */}
-                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-teal-400 transition-colors">
-                      {uploadedResume ? (
-                        <div className="flex items-center justify-between bg-gray-50 p-4 rounded-lg">
-                          <div className="flex items-center space-x-3">
-                            <FileText className="w-8 h-8 text-teal-600" />
-                            <div className="text-left">
-                              <p className="font-medium text-gray-900">{uploadedResume.name}</p>
-                              <p className="text-sm text-gray-500">{uploadedResume.size}</p>
-                              <p className="text-sm text-green-600">✓ Uploaded successfully</p>
+                        
+                        {!selectedResumeKey && (
+                          <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                            <div className="flex items-center space-x-2">
+                              <AlertCircle className="w-4 h-4 text-yellow-600" />
+                              <p className="text-sm text-yellow-700">Please select a resume to continue with your application.</p>
                             </div>
                           </div>
-                          <button
-                            onClick={() => setUploadedResume(null)}
-                            className="text-red-600 hover:text-red-700"
-                          >
-                            <X className="w-5 h-5" />
-                          </button>
-                        </div>
-                      ) : (
-                        <div>
-                          {isUploadingResume ? (
-                            <div className="flex items-center justify-center space-x-2">
-                              <Loader2 className="w-6 h-6 animate-spin text-teal-600" />
-                              <span className="text-gray-600">Uploading resume...</span>
-                            </div>
-                          ) : (
-                            <>
-                              <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                              <p className="text-gray-600 mb-2">Upload a new resume</p>
-                              <p className="text-sm text-gray-500">Supports PDF, DOC, DOCX (Max 5MB)</p>
-                              <input
-                                type="file"
-                                onChange={handleFileUpload}
-                                accept=".pdf,.doc,.docx"
-                                className="hidden"
-                                id="resume-upload"
-                                disabled={isUploadingResume}
-                              />
-                              <label
-                                htmlFor="resume-upload"
-                                className="mt-4 inline-block bg-teal-600 hover:bg-teal-700 text-white px-6 py-2 rounded-lg cursor-pointer transition-colors disabled:opacity-50"
-                              >
-                                Choose File
-                              </label>
-                            </>
-                          )}
-                        </div>
-                      )}
-                    </div>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
+                        <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                        <h3 className="text-lg font-medium text-gray-900 mb-2">No resumes found in your profile</h3>
+                        <p className="text-gray-600">
+                          Please upload a resume to your profile first, then return to complete your application.
+                        </p>
+                      </div>
+                    )}
                   </div>
                   
                   {/* Cover Letter */}
@@ -697,9 +676,9 @@ const ApplyNow = () => {
                       <div>
                         <h3 className="font-medium text-gray-900">Resume</h3>
                         <p className="text-gray-600">
-                          {uploadedResume ? uploadedResume.name : 
-                           selectedResumeKey ? existingResumes.find(r => r.key === selectedResumeKey)?.originalName || 'Selected resume' :
-                           'Not selected'}
+                          {selectedResumeKey ? 
+                            (existingResumes.find(r => r.key === selectedResumeKey)?.originalName || 'Selected resume') : 
+                            'Not selected'}
                         </p>
                       </div>
                     </div>

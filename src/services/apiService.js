@@ -3,7 +3,7 @@
  * Handles all backend API calls with proper error handling
  */
 
-const API_BASE_URL = 'https://recruitify-backend-f2zw.onrender.com';
+const API_BASE_URL = 'http://localhost:5050';
 
 class ApiService {
   // Helper method to make API calls
@@ -23,7 +23,7 @@ class ApiService {
 
     // Add auth token if available
     const token = localStorage.getItem('authToken');
-    if (token && token !== 'demo-token-' + Date.now()) {
+    if (token && !token.startsWith('demo-token-') && token !== 'null' && token !== 'undefined') {
       defaultOptions.headers.Authorization = `Bearer ${token}`;
     }
 
@@ -136,12 +136,11 @@ class ApiService {
       // Use test-redis endpoint as health check since /api/auth/health doesn't exist
       const response = await fetch(`${API_BASE_URL}/api/test-redis`, {
         method: 'GET',
-        timeout: 5000,
+        headers: { 'Content-Type': 'application/json' }
       });
       
       if (response.ok) {
-        const data = await response.json();
-        console.log('Backend health check successful:', data);
+        console.log('✅ Backend health check successful');
         return true;
       } else {
         console.warn('Backend health check failed with status:', response.status);
@@ -149,6 +148,28 @@ class ApiService {
       }
     } catch (error) {
       console.warn('Backend health check failed:', error);
+      return false;
+    }
+  }
+
+  // Validate current token by making an authenticated request
+  static async validateToken() {
+    try {
+      const token = localStorage.getItem('authToken');
+      if (!token || token === 'null' || token === 'undefined') {
+        throw new Error('No token found');
+      }
+      
+      // Make a simple request to test-redis endpoint (no auth required)
+      // This validates that backend is accessible
+      const response = await fetch(`${API_BASE_URL}/api/test-redis`);
+      if (response.ok) {
+        return true;
+      } else {
+        throw new Error('Backend not accessible');
+      }
+    } catch (error) {
+      console.warn('Token validation failed:', error);
       return false;
     }
   }
@@ -221,7 +242,7 @@ class ApiService {
     const token = localStorage.getItem('authToken');
     const headers = {};
     
-    if (token && token !== 'demo-token-' + Date.now()) {
+    if (token && !token.startsWith('demo-token-') && token !== 'null' && token !== 'undefined') {
       headers.Authorization = `Bearer ${token}`;
     }
     
@@ -276,7 +297,7 @@ class ApiService {
 
   // Create new job
   static async createJob(jobData) {
-    return this.makeAuthenticatedRequest('/api/recruiter/job', {
+    return this.makeAuthenticatedRequest('/api/recruiter/jobs', {
       method: 'POST',
       body: JSON.stringify(jobData),
     });
@@ -284,12 +305,12 @@ class ApiService {
 
   // Get recruiter's jobs
   static async getRecruiterJobs() {
-    return this.makeAuthenticatedRequest('/api/recruiter/job');
+    return this.makeAuthenticatedRequest('/api/recruiter/jobs');
   }
 
   // Update job
   static async updateJob(jobId, jobData) {
-    return this.makeAuthenticatedRequest(`/api/recruiter/job/${jobId}`, {
+    return this.makeAuthenticatedRequest(`/api/recruiter/jobs/${jobId}`, {
       method: 'PUT',
       body: JSON.stringify(jobData),
     });
@@ -297,7 +318,7 @@ class ApiService {
 
   // Delete job
   static async deleteJob(jobId) {
-    return this.makeAuthenticatedRequest(`/api/recruiter/job/${jobId}`, {
+    return this.makeAuthenticatedRequest(`/api/recruiter/jobs/${jobId}`, {
       method: 'DELETE',
     });
   }
@@ -311,7 +332,7 @@ class ApiService {
       status: params.status || '',
     }).toString();
     
-    return this.makeAuthenticatedRequest(`/api/recruiter/job/${jobId}/applications?${queryParams}`);
+    return this.makeAuthenticatedRequest(`/api/recruiter/jobs/${jobId}/applications?${queryParams}`);
   }
 
   // Update application status
@@ -329,13 +350,101 @@ class ApiService {
 
   // Get all applications for recruiter
   static async getRecruiterApplications(params = {}) {
-    const queryParams = new URLSearchParams({
-      jobId: params.jobId || '',
-      status: params.status || '',
-      sort: params.sort || 'createdAt'
-    }).toString();
+    // If jobId is provided, get applications for specific job
+    if (params.jobId) {
+      const queryParams = new URLSearchParams({
+        status: params.status || '',
+        sort: params.sort || 'createdAt',
+        atsScore: params.atsScore || ''
+      }).toString();
+      
+      return this.makeAuthenticatedRequest(`/api/recruiter/jobs/${params.jobId}/applications?${queryParams}`);
+    }
     
-    return this.makeAuthenticatedRequest(`/api/recruiter/job/applications?${queryParams}`);
+    // Build query parameters for all applications
+    const queryParams = new URLSearchParams();
+    if (params.status) queryParams.append('status', params.status);
+    if (params.sort) queryParams.append('sort', params.sort || 'ats');
+    if (params.atsScore) queryParams.append('atsScore', params.atsScore);
+    if (params.jobId) queryParams.append('jobId', params.jobId);
+    
+    const queryString = queryParams.toString();
+    const url = `/api/recruiter/jobs/applications${queryString ? `?${queryString}` : ''}`;
+    
+    return this.makeAuthenticatedRequest(url);
+  }
+
+  // ==================== ADMIN APIs ====================
+  
+  // Note: Removed insecure client-side admin validation
+  // Backend properly validates admin role via JWT + middleware
+  
+  // Get admin analytics summary (dashboard stats)
+  static async getAdminAnalyticsSummary() {
+    return this.makeAuthenticatedRequest('/api/admin/analytics/summary');
+  }
+
+  // Get admin analytics trends (last 7 days activity)
+  static async getAdminAnalyticsTrends() {
+    return this.makeAuthenticatedRequest('/api/admin/analytics/trends');
+  }
+
+  // Get admin overview data
+  static async getAdminOverview() {
+    return this.makeAuthenticatedRequest('/api/admin/overview');
+  }
+
+  // Get recent admin actions
+  static async getAdminRecentActions() {
+    return this.makeAuthenticatedRequest('/api/admin/recent-actions');
+  }
+
+
+  // Get all admin reports with optional pagination and filtering
+  static async getAdminReports(params = {}) {
+    if (Object.keys(params).length > 0) {
+      const queryParams = new URLSearchParams({
+        status: params.status || '',
+        page: params.page || 1,
+        limit: params.limit || 20
+      }).toString();
+      return this.makeAuthenticatedRequest(`/api/admin/reports?${queryParams}`);
+    }
+    
+    return this.makeAuthenticatedRequest('/api/admin/reports');
+  }
+
+  // Take action on a report
+  static async takeReportAction(reportId, action) {
+    return this.makeAuthenticatedRequest(`/api/admin/reports/${reportId}/action`, {
+      method: 'PUT',
+      body: JSON.stringify({ action })
+    });
+  }
+
+  // Get report summary statistics
+  static async getAdminReportSummary() {
+    return this.makeAuthenticatedRequest('/api/admin/reports/summary');
+  }
+
+  // Get all jobs for admin - Note: Backend doesn't have admin job endpoints
+  // Admin users cannot access recruiter or candidate job endpoints due to role restrictions
+  static async getAdminJobs() {
+    // Since backend doesn't have admin job endpoints and existing endpoints are role-protected,
+    // we'll return an empty array and show appropriate message in UI
+    console.warn('⚠️ No admin job endpoints available in backend. Admin users cannot access job data.');
+    return [];
+  }
+
+  // Get job applications count for a specific job
+  static async getJobApplicationsCount(jobId) {
+    try {
+      const response = await this.makeAuthenticatedRequest(`/api/recruiter/jobs/${jobId}/applications`);
+      return response.count || 0;
+    } catch (error) {
+      console.warn('Could not fetch applications count:', error);
+      return 0;
+    }
   }
 }
 

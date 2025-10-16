@@ -33,20 +33,7 @@ function Login() {
     setErrors({});
     
     try {
-      // Check for demo admin credentials first
-      if (formData.email === 'demo@admin.com' && formData.password === 'demo123') {
-        // Demo admin - use AuthContext
-        const userData = {
-          email: formData.email,
-          role: 'admin',
-          loginDate: new Date().toISOString()
-        };
-        login(userData, 'demo-admin-token', 'admin');
-        navigate('/admin/dashboard');
-        return;
-      }
-
-      // Real backend login
+      // Backend login
       const response = await ApiService.login({
         email: formData.email,
         password: formData.password
@@ -82,6 +69,8 @@ function Login() {
         };
         localStorage.setItem('recruiterProfile', JSON.stringify(recruiterProfile));
         navigate('/recruiter/dashboard');
+      } else if (response.user.role === 'Admin') {
+        navigate('/admin/dashboard');
       }
 
     } catch (error) {
@@ -159,21 +148,6 @@ function Login() {
             Continue with Google
           </motion.button>
           
-          {/* Demo Admin Info */}
-          <motion.div 
-            className="mb-4 p-3 bg-gradient-to-r from-orange-500/10 to-red-500/10 border border-orange-400/20 rounded-lg"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-          >
-            <div className="text-center">
-              <p className="text-orange-300 text-xs sm:text-sm font-medium mb-1">🔑 Demo Admin Access</p>
-              <p className="text-orange-200/80 text-xs">
-                Email: <span className="font-mono">demo@admin.com</span><br/>
-                Password: <span className="font-mono">demo123</span>
-              </p>
-            </div>
-          </motion.div>
           
           <motion.div className="text-center" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}>
             <p className="text-xs sm:text-sm text-white/70">

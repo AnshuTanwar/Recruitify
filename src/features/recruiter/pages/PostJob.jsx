@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { MapPin, DollarSign, Calendar, Briefcase, GraduationCap, X, CheckCircle, ArrowLeft, Clock } from 'lucide-react';
+import { MapPin, Calendar, Briefcase, GraduationCap, X, CheckCircle, ArrowLeft, Clock } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import RecruiterLayout from '../components/RecruiterLayout.jsx';
 import Button from '../../../components/ui/Button.jsx';
@@ -38,19 +38,25 @@ const PostJob = () => {
     setError(null);
     
     try {
-      // Prepare job data for backend API
+      // Prepare job data for backend API (matching exact backend schema)
       const jobData = {
         jobName: formData.jobTitle,
-        description: formData.jobDescription,
-        skillsRequired: formData.requiredSkills,
-        experienceRequired: parseInt(formData.experience) || 0,
+        companyName: formData.company,
+        location: formData.location,
+        type: formData.jobType,
         salary: {
           min: parseInt(formData.minSalary) || null,
           max: parseInt(formData.maxSalary) || null,
-          currency: 'USD',
-          yearly: formData.salaryType === 'Yearly'
+          currency: 'INR',
+          period: formData.salaryType
         },
-        type: formData.jobType.toLowerCase().replace(' ', '-') || 'full-time'
+        experienceLevel: formData.experience,
+        education: formData.education,
+        applicationDeadline: formData.applicationDeadline || null,
+        skillsRequired: formData.requiredSkills,
+        description: formData.jobDescription,
+        requirements: formData.requirements ? formData.requirements.split('\n').filter(r => r.trim()) : [],
+        benefits: formData.benefits ? formData.benefits.split('\n').filter(b => b.trim()) : []
       };
 
       // Call backend API to create job
@@ -95,10 +101,29 @@ const PostJob = () => {
     }, 3000);
   };
 
-  const jobTypes = ['Full Time', 'Part Time', 'Contract', 'Temporary', 'Internship'];
-  const salaryTypes = ['Monthly', 'Yearly', 'Hourly'];
-  const experienceLevels = ['Entry Level', '1-2 years', '3-5 years', '5+ years', 'Senior Level'];
-  const educationLevels = ['High School', 'Bachelor\'s Degree', 'Master\'s Degree', 'PhD', 'Any'];
+  const jobTypes = [
+    { value: 'full-time', label: 'Full Time' },
+    { value: 'part-time', label: 'Part Time' },
+    { value: 'contract', label: 'Contract' },
+    { value: 'internship', label: 'Internship' }
+  ];
+  const salaryTypes = [
+    { value: 'monthly', label: 'Monthly' },
+    { value: 'yearly', label: 'Yearly' },
+    { value: 'hourly', label: 'Hourly' }
+  ];
+  const experienceLevels = [
+    { value: 'entry-level', label: 'Entry Level' },
+    { value: '1-2 years', label: '1-2 years' },
+    { value: '3-4 years', label: '3-4 years' },
+    { value: 'senior-level', label: 'Senior Level' }
+  ];
+  const educationLevels = [
+    { value: 'high-school', label: 'High School' },
+    { value: 'bachelor', label: 'Bachelor\'s Degree' },
+    { value: 'master', label: 'Master\'s Degree' },
+    { value: 'phd', label: 'PhD' }
+  ];
 
   const handleAddSkill = () => {
     if (newSkill.trim() && !formData.requiredSkills.includes(newSkill.trim())) {
@@ -238,7 +263,7 @@ const PostJob = () => {
                   >
                     <option value="">Select job type</option>
                     {jobTypes.map(type => (
-                      <option key={type} value={type}>{type}</option>
+                      <option key={type.value} value={type.value}>{type.label}</option>
                     ))}
                   </select>
                 </div>
@@ -252,7 +277,7 @@ const PostJob = () => {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Min Salary</label>
                   <div className="relative">
-                    <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                    <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 font-medium">₹</span>
                     <input
                       type="number"
                       value={formData.minSalary}
@@ -266,7 +291,7 @@ const PostJob = () => {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Max Salary</label>
                   <div className="relative">
-                    <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                    <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 font-medium">₹</span>
                     <input
                       type="number"
                       value={formData.maxSalary}
@@ -286,7 +311,7 @@ const PostJob = () => {
                   >
                     <option value="">Select type</option>
                     {salaryTypes.map(type => (
-                      <option key={type} value={type}>{type}</option>
+                      <option key={type.value} value={type.value}>{type.label}</option>
                     ))}
                   </select>
                 </div>
@@ -306,7 +331,7 @@ const PostJob = () => {
                   >
                     <option value="">Select experience</option>
                     {experienceLevels.map(level => (
-                      <option key={level} value={level}>{level}</option>
+                      <option key={level.value} value={level.value}>{level.label}</option>
                     ))}
                   </select>
                 </div>
@@ -320,7 +345,7 @@ const PostJob = () => {
                   >
                     <option value="">Select education</option>
                     {educationLevels.map(level => (
-                      <option key={level} value={level}>{level}</option>
+                      <option key={level.value} value={level.value}>{level.label}</option>
                     ))}
                   </select>
                 </div>
@@ -371,7 +396,7 @@ const PostJob = () => {
                         className="text-gray-400 hover:text-gray-600 transition-colors duration-300"
                       >
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
                         </svg>
                       </button>
                     </div>

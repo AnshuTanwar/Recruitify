@@ -43,10 +43,8 @@ const RecruiterHelp = React.lazy(() => import('./features/recruiter/pages/Recrui
 const TargetedJobSending = React.lazy(() => import('./features/recruiter/pages/TargetedJobSending.jsx'));
 
 const AdminDashboard = React.lazy(() => import('./features/admin/pages/AdminDashboard.jsx'));
-const AdminUserManagement = React.lazy(() => import('./features/admin/pages/AdminUserManagement.jsx'));
 const AdminAnalytics = React.lazy(() => import('./features/admin/pages/AdminAnalytics.jsx'));
-const AdminSettings = React.lazy(() => import('./features/admin/pages/AdminSettings.jsx'));
-const AdminProfile = React.lazy(() => import('./features/admin/pages/AdminProfile.jsx'));
+const AdminReports = React.lazy(() => import('./features/admin/pages/AdminReports.jsx'));
 import NotFound from './components/common/NotFound.jsx';
 import AnimatedBackground from './components/common/AnimatedBackground.jsx';
 import Header from './components/layout/Header.jsx';
@@ -133,10 +131,8 @@ function App() {
           
           {/* Admin Routes - Protected */}
           <Route path="/admin/dashboard" element={<PrivateRoute requiredRole="admin"><AdminDashboard /></PrivateRoute>} />
-          <Route path="/admin/users" element={<PrivateRoute requiredRole="admin"><AdminUserManagement /></PrivateRoute>} />
           <Route path="/admin/analytics" element={<PrivateRoute requiredRole="admin"><AdminAnalytics /></PrivateRoute>} />
-          <Route path="/admin/settings" element={<PrivateRoute requiredRole="admin"><AdminSettings /></PrivateRoute>} />
-          <Route path="/admin/profile" element={<PrivateRoute requiredRole="admin"><AdminProfile /></PrivateRoute>} />
+          <Route path="/admin/reports" element={<PrivateRoute requiredRole="admin"><AdminReports /></PrivateRoute>} />
           
           {/* 404 Catch-all Route */}
           <Route path="*" element={<NotFound />} />

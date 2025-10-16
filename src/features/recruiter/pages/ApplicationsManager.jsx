@@ -41,6 +41,13 @@ const ApplicationsManager = () => {
         setLoading(true);
         setError(null);
 
+        // Check if jobId is valid
+        if (!jobId || jobId === 'undefined') {
+          throw new Error('Invalid job ID. Please select a valid job.');
+        }
+
+        console.log('Fetching applications for jobId:', jobId);
+
         // Fetch job applications from backend
         const response = await ApiService.getJobApplications(jobId, {
           page: 1,
@@ -78,8 +85,11 @@ const ApplicationsManager = () => {
       }
     };
 
-    if (jobId) {
+    if (jobId && jobId !== 'undefined') {
       fetchData();
+    } else {
+      setLoading(false);
+      setError('No job selected. Please go back and select a job to view applications.');
     }
   }, [jobId]);
 

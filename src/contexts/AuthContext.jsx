@@ -29,22 +29,29 @@ export const AuthProvider = ({ children }) => {
       const userData = localStorage.getItem('userData');
       const userType = localStorage.getItem('userType');
 
-      if (token && userData && userType) {
-        // Verify token is still valid by checking backend health
-        const isBackendHealthy = await ApiService.checkBackendHealth();
-        
-        if (isBackendHealthy) {
-          // Token exists and backend is accessible
-          setUser(JSON.parse(userData));
-          setIsAuthenticated(true);
-          console.log('✅ User authenticated:', JSON.parse(userData));
-        } else {
-          // Backend not accessible, clear tokens
-          console.warn('⚠️ Backend not accessible, clearing tokens');
+      if (token && userData && userType && token !== 'null' && token !== 'undefined') {
+        try {
+          // Verify token is still valid
+          const isTokenValid = await ApiService.validateToken();
+          
+          if (isTokenValid) {
+            // Token is valid, restore authentication state
+            const parsedUserData = JSON.parse(userData);
+            setUser(parsedUserData);
+            setIsAuthenticated(true);
+            console.log('✅ User authenticated on refresh:', parsedUserData);
+          } else {
+            // Token is invalid or expired
+            console.warn('⚠️ Token validation failed');
+            clearAuthData();
+          }
+        } catch (authError) {
+          // Token validation error
+          console.warn('⚠️ Token validation error:', authError.message);
           clearAuthData();
         }
       } else {
-        console.log('❌ No valid authentication found');
+        console.log('❌ No valid authentication data found');
         clearAuthData();
       }
     } catch (error) {
@@ -97,13 +104,20 @@ export const AuthProvider = ({ children }) => {
     console.log('🧹 Authentication data cleared');
   };
 
+  // Method to refresh authentication status
+  const refreshAuth = async () => {
+    setIsLoading(true);
+    await checkAuthStatus();
+  };
+
   const value = {
     user,
     isAuthenticated,
     isLoading,
     login,
     logout,
-    checkAuthStatus
+    checkAuthStatus,
+    refreshAuth
   };
 
   return (

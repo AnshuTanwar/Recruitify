@@ -35,20 +35,21 @@ const RecruiterJobs = () => {
     fetchJobs();
   }, []);
 
-  // Map jobs to display format
+  // Map jobs to display format using exact backend data
   const jobsWithApplications = jobs.map(job => ({
     ...job,
-    id: job._id,
+    // Backend transforms _id to id, so we use job.id (not job._id)
+    id: job.id || job._id, // fallback to _id if id doesn't exist
     title: job.jobName,
-    applications: 0, // Will be populated by individual API calls if needed
+    company: job.companyName,
+    applications: job.shortlistedCandidates?.length || 0,
     status: job.status === 'open' ? 'Active' : 'Closed',
     type: job.type?.replace('-', ' ') || 'full time',
-    location: 'Remote', // Will be added to job model later
-    salary: job.salary ? 
-      `$${job.salary.min}k-${job.salary.max}k` : 
+    location: job.location || 'Location not specified',
+    salary: job.salary?.min && job.salary?.max ? 
+      `₹${job.salary.min.toLocaleString()}-${job.salary.max.toLocaleString()}/${job.salary.period || 'year'}` : 
       'Salary not specified',
-    postedDate: new Date(job.createdAt).toLocaleDateString(),
-    company: 'Company Name' // Will be populated from recruiter profile
+    postedDate: new Date(job.createdAt).toLocaleDateString()
   }));
 
   const filteredJobs = jobsWithApplications.filter(job => {

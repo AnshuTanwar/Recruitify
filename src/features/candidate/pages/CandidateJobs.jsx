@@ -4,7 +4,6 @@ import {
   Search, 
   Filter, 
   MapPin, 
-  DollarSign, 
   Clock, 
   Briefcase, 
   Heart,
@@ -15,7 +14,8 @@ import {
   Target,
   CheckCircle,
   AlertCircle,
-  Loader2
+  Loader2,
+  Calendar
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import DashboardLayout from '../components/DashboardLayout.jsx';
@@ -102,10 +102,16 @@ const CandidateJobs = () => {
 
   const handleViewDetails = async (jobId) => {
     try {
+      console.log('Viewing details for jobId:', jobId);
+      
+      if (!jobId || jobId === 'undefined') {
+        throw new Error('Invalid job ID');
+      }
+      
       setLoading(true);
-      const jobDetails = await ApiService.getJobDetails(jobId);
-      if (!jobDetails) throw new Error('Job details not found');
-      setSelectedJobDetails(jobDetails);
+      const jobResponse = await ApiService.getJobDetails(jobId);
+      if (!jobResponse || !jobResponse.job) throw new Error('Job details not found');
+      setSelectedJobDetails(jobResponse.job);
       setShowDetailsModal(true);
     } catch (err) {
       console.error('Failed to load job details:', err);
@@ -237,7 +243,7 @@ const CandidateJobs = () => {
           <div className="space-y-4">
             {filteredJobs.map((job, index) => (
               <motion.div
-                key={job._id || job.id || index}
+                key={job.id || job._id || index}
                 className={`bg-white rounded-xl p-4 sm:p-6 shadow-sm hover:shadow-md transition-all duration-300 ${
                   job.featured ? 'border-2 border-teal-200 bg-teal-50/30' : 'border border-gray-200'
                 }`}
@@ -264,7 +270,7 @@ const CandidateJobs = () => {
                             <p className="text-gray-600 font-medium">Company Name</p>
                           </div>
                           <motion.button
-                            onClick={() => toggleSaveJob(job._id)}
+                            onClick={() => toggleSaveJob(job.id || job._id)}
                             className={`p-2 rounded-lg transition-colors duration-300 flex-shrink-0 ${
                               job.saved 
                                 ? 'text-red-500 bg-red-50 hover:bg-red-100' 
@@ -291,10 +297,10 @@ const CandidateJobs = () => {
                             <span>Remote</span>
                           </div>
                           <div className="flex items-center space-x-1">
-                            <DollarSign className="w-4 h-4" />
+                            <span className="text-sm font-medium">₹</span>
                             <span>
                               {job.salary?.min && job.salary?.max 
-                                ? `$${job.salary.min}k-${job.salary.max}k`
+                                ? `${job.salary.min}k-${job.salary.max}k`
                                 : 'Salary not specified'
                               }
                             </span>
@@ -328,7 +334,7 @@ const CandidateJobs = () => {
                               {job.applications || 0} applications
                             </span>
                             <motion.button
-                              onClick={() => handleViewDetails(job._id)}
+                              onClick={() => handleViewDetails(job.id || job._id)}
                               className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium flex items-center justify-center space-x-2 w-full sm:w-auto order-2 sm:order-2"
                               whileHover={{ scale: 1.05 }}
                               whileTap={{ scale: 0.95 }}
@@ -337,7 +343,7 @@ const CandidateJobs = () => {
                               <span>View Details</span>
                             </motion.button>
                             <motion.button
-                              onClick={() => navigate(`/dashboard/apply/${job._id}`)}
+                              onClick={() => navigate(`/dashboard/apply/${job.id || job._id}`)}
                               className="bg-teal-600 hover:bg-teal-700 text-white px-6 py-2 rounded-lg font-medium flex items-center justify-center space-x-2 w-full sm:w-auto order-1 sm:order-3"
                               whileHover={{ scale: 1.05 }}
                               whileTap={{ scale: 0.95 }}
@@ -367,38 +373,142 @@ const CandidateJobs = () => {
             size="lg"
           >
             {selectedJobDetails ? (
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
+              <div className="space-y-6 max-h-96 overflow-y-auto">
+                {/* Header */}
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <h3 className="text-xl font-bold text-gray-900 mb-1">{selectedJobDetails.jobName}</h3>
+                    <p className="text-lg text-gray-700 font-medium">{selectedJobDetails.companyName || 'Company Name'}</p>
+                    <div className="flex items-center space-x-4 mt-2 text-sm text-gray-600">
+                      <span className="flex items-center space-x-1">
+                        <MapPin className="w-4 h-4" />
+                        <span>{selectedJobDetails.location || 'Remote'}</span>
+                      </span>
+                      <span className="flex items-center space-x-1">
+                        <Briefcase className="w-4 h-4" />
+                        <span>{selectedJobDetails.type?.replace('-', ' ') || 'Full Time'}</span>
+                      </span>
+                      <span className="flex items-center space-x-1">
+                        <Calendar className="w-4 h-4" />
+                        <span>Posted {new Date(selectedJobDetails.createdAt).toLocaleDateString()}</span>
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Salary Information */}
+                {selectedJobDetails.salary && (selectedJobDetails.salary.min || selectedJobDetails.salary.max) && (
+                  <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+                    <h4 className="font-semibold text-green-800 mb-2 flex items-center">
+                      <span className="mr-2">₹</span>
+                      Salary Range
+                    </h4>
+                    <p className="text-green-700">
+                      {selectedJobDetails.salary.min && selectedJobDetails.salary.max 
+                        ? `₹${selectedJobDetails.salary.min.toLocaleString()} - ₹${selectedJobDetails.salary.max.toLocaleString()}`
+                        : selectedJobDetails.salary.min 
+                          ? `₹${selectedJobDetails.salary.min.toLocaleString()}+`
+                          : `Up to ₹${selectedJobDetails.salary.max.toLocaleString()}`
+                      }
+                      {selectedJobDetails.salary.period && ` per ${selectedJobDetails.salary.period}`}
+                    </p>
+                  </div>
+                )}
+
+                {/* Job Description */}
+                {selectedJobDetails.description && (
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-900">{selectedJobDetails.jobName}</h3>
-                    <p className="text-sm text-gray-600">{selectedJobDetails.companyName || 'Company Name'}</p>
+                    <h4 className="font-semibold text-gray-800 mb-3">Job Description</h4>
+                    <div className="text-gray-700 leading-relaxed">
+                      <p>{selectedJobDetails.description}</p>
+                    </div>
                   </div>
-                  <div className="text-sm text-gray-500">{new Date(selectedJobDetails.createdAt).toLocaleDateString()}</div>
+                )}
+
+                {/* Requirements */}
+                {selectedJobDetails.requirements && selectedJobDetails.requirements.length > 0 && (
+                  <div>
+                    <h4 className="font-semibold text-gray-800 mb-3">Requirements</h4>
+                    <ul className="list-disc list-inside space-y-1 text-gray-700">
+                      {selectedJobDetails.requirements.map((req, i) => (
+                        <li key={i}>{req}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {/* Required Skills */}
+                {selectedJobDetails.skillsRequired && selectedJobDetails.skillsRequired.length > 0 && (
+                  <div>
+                    <h4 className="font-semibold text-gray-800 mb-3">Required Skills</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {selectedJobDetails.skillsRequired.map((skill, i) => (
+                        <span key={i} className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
+                          {skill}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Benefits */}
+                {selectedJobDetails.benefits && selectedJobDetails.benefits.length > 0 && (
+                  <div>
+                    <h4 className="font-semibold text-gray-800 mb-3">Benefits & Perks</h4>
+                    <ul className="list-disc list-inside space-y-1 text-gray-700">
+                      {selectedJobDetails.benefits.map((benefit, i) => (
+                        <li key={i}>{benefit}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {/* Additional Info */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-gray-50 rounded-lg">
+                  {selectedJobDetails.experienceLevel && (
+                    <div>
+                      <span className="font-medium text-gray-800">Experience Level:</span>
+                      <p className="text-gray-600 capitalize">{selectedJobDetails.experienceLevel.replace('-', ' ')}</p>
+                    </div>
+                  )}
+                  {selectedJobDetails.education && (
+                    <div>
+                      <span className="font-medium text-gray-800">Education:</span>
+                      <p className="text-gray-600 capitalize">{selectedJobDetails.education.replace('-', ' ')}</p>
+                    </div>
+                  )}
+                  {selectedJobDetails.applicationDeadline && (
+                    <div>
+                      <span className="font-medium text-gray-800">Application Deadline:</span>
+                      <p className="text-gray-600">{new Date(selectedJobDetails.applicationDeadline).toLocaleDateString()}</p>
+                    </div>
+                  )}
+                  {selectedJobDetails.recruiter && (
+                    <div>
+                      <span className="font-medium text-gray-800">Recruiter:</span>
+                      <p className="text-gray-600">{selectedJobDetails.recruiter.name}</p>
+                      {selectedJobDetails.recruiter.company && (
+                        <p className="text-gray-500 text-sm">{selectedJobDetails.recruiter.company}</p>
+                      )}
+                    </div>
+                  )}
                 </div>
 
-                <div className="text-gray-700">
-                  <p>{selectedJobDetails.description}</p>
-                </div>
-
-                <div>
-                  <h4 className="text-sm font-medium text-gray-800 mb-2">Required Skills</h4>
-                  <div className="flex flex-wrap gap-2">
-                    {(selectedJobDetails.skillsRequired || []).map((s, i) => (
-                      <span key={i} className="px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs">{s}</span>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between pt-4 border-t">
-                  <div className="text-sm text-gray-600">
-                    <div>Location: {selectedJobDetails.location || 'Remote'}</div>
-                    <div>Type: {selectedJobDetails.type || 'Full Time'}</div>
-                    <div>Applications: {selectedJobDetails.applications || 0}</div>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <button onClick={closeDetailsModal} className="px-4 py-2 bg-gray-200 rounded-lg">Close</button>
-                    <button onClick={() => navigate(`/dashboard/apply/${selectedJobDetails._id}`)} className="px-4 py-2 bg-teal-600 text-white rounded-lg">Apply</button>
-                  </div>
+                {/* Action Buttons */}
+                <div className="flex items-center justify-between pt-4 border-t border-gray-200">
+                  <button 
+                    onClick={closeDetailsModal} 
+                    className="px-6 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg font-medium transition-colors"
+                  >
+                    Close
+                  </button>
+                  <button 
+                    onClick={() => navigate(`/dashboard/apply/${selectedJobDetails.id || selectedJobDetails._id}`)} 
+                    className="px-6 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-lg font-medium transition-colors flex items-center space-x-2"
+                  >
+                    <span>Apply Now</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
                 </div>
               </div>
             ) : (

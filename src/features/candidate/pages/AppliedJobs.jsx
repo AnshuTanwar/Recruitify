@@ -21,20 +21,22 @@ const AppliedJobs = () => {
         setError(null);
         const applications = await ApiService.getCandidateApplications();
         
-        // Transform the data for display
+        // Transform the data for display using exact backend structure
         const transformedJobs = applications.map(application => ({
           id: application._id,
           jobId: application.job._id,
           title: application.job?.jobName || 'Job Title Not Available',
-          company: 'Company Name', // Will be populated when job includes recruiter info
-          location: 'Remote', // Will be populated from job details
+          company: application.job?.companyName || 'Company Name Not Available',
+          location: application.job?.location || 'Location not specified',
           type: application.job?.type?.replace('-', ' ') || 'full time',
-          salary: application.job?.salary ? 
-            `$${application.job.salary.min}k-${application.job.salary.max}k` : 
+          salary: application.job?.salary?.min && application.job?.salary?.max ? 
+            `₹${application.job.salary.min.toLocaleString()}-${application.job.salary.max.toLocaleString()}/${application.job.salary.period || 'year'}` : 
             'Salary not specified',
           dateApplied: new Date(application.createdAt).toLocaleDateString(),
           status: application.status || 'applied',
-          atsScore: application.atsScore
+          atsScore: application.atsScore,
+          experienceLevel: application.job?.experienceLevel || 'Not specified',
+          skillsRequired: application.job?.skillsRequired || []
         }));
         
         setAppliedJobs(transformedJobs);

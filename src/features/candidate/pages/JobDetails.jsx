@@ -35,24 +35,26 @@ const JobDetails = () => {
         setLoading(true);
         setError(null);
         
-        // Get job from candidate job feed
-        const jobsResponse = await ApiService.getCandidateJobFeed();
-        const foundJob = jobsResponse.find(job => job._id === id);
+        // Get job using dedicated job details endpoint (backend returns {job: {...}})
+        const jobResponse = await ApiService.getJobDetails(id);
         
-        if (foundJob) {
+        if (jobResponse && jobResponse.job) {
+          const jobData = jobResponse.job;
           setJob({
-            ...foundJob,
-            requirements: foundJob.requirements || [],
-            responsibilities: foundJob.responsibilities || [],
-            benefits: foundJob.benefits || [],
-            skills: foundJob.skillsRequired || [],
-            applicants: 0, // Will be populated if needed
-            posted: new Date(foundJob.createdAt).toLocaleDateString(),
-            experience: foundJob.experienceRequired || 'Not specified',
-            education: 'Not specified' // Will be added to job model if needed
+            ...jobData,
+            requirements: jobData.requirements || [],
+            responsibilities: jobData.responsibilities || [],
+            benefits: jobData.benefits || [],
+            skills: jobData.skillsRequired || [],
+            applicants: 0, // Backend doesn't return application count in job details
+            posted: new Date(jobData.createdAt).toLocaleDateString(),
+            experience: jobData.experienceLevel || 'Not specified',
+            education: jobData.education || 'Not specified',
+            company: jobData.companyName || 'Company Name',
+            location: jobData.location || 'Location not specified'
           });
         } else {
-          throw new Error('Job not found or not available for your skill set');
+          throw new Error('Job not found');
         }
       } catch (err) {
         console.error('Error fetching job data:', err);

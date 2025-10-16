@@ -195,7 +195,7 @@ const EditJob = () => {
                     value={formData.salary}
                     onChange={handleInputChange}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
-                    placeholder="e.g. $80,000 - $120,000"
+                    placeholder="e.g. ₹80,000 - ₹1,20,000"
                   />
                 </div>
                 <div>

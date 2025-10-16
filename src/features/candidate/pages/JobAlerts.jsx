@@ -56,7 +56,7 @@ const JobAlerts = () => {
           company: 'Company Name', // Will be populated when job includes company info
           location: 'Remote',
           type: job.type?.replace('-', ' ') || 'full time',
-          salary: job.salary ? `$${job.salary.min}k-${job.salary.max}k` : 'Salary not specified',
+          salary: job.salary ? `₹${job.salary.min}k-${job.salary.max}k` : 'Salary not specified',
           postedDate: new Date(job.createdAt).toLocaleDateString(),
           matchPercentage: 85 // Placeholder - backend could calculate this
         }));

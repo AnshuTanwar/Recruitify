@@ -78,7 +78,7 @@ const Dashboard = () => {
     location: 'Remote', // Will be populated from job details
     type: application.job?.type || 'full-time',
     salary: application.job?.salary ? 
-      `$${application.job.salary.min}k-${application.job.salary.max}k` : 
+      `₹${application.job.salary.min}k-${application.job.salary.max}k` : 
       'Salary not specified',
     dateApplied: new Date(application.createdAt).toLocaleDateString(),
     status: application.status || 'applied',
