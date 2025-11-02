@@ -177,7 +177,6 @@ const CandidateChat = ({ roomId, onClose }) => {
       <div 
         ref={messagesContainerRef}
         className="flex-1 overflow-y-auto p-4 space-y-4"
-        style={{ maxHeight: '400px' }}
       >
         {hasMore && (
           <button
@@ -228,7 +227,7 @@ const CandidateChat = ({ roomId, onClose }) => {
               <button
                 key={index}
                 onClick={() => useSmartReply(reply)}
-                className="block w-full text-left p-2 text-sm bg-white border border-yellow-200 rounded hover:bg-yellow-50 transition-colors"
+                className="block w-full text-left p-2 text-sm text-gray-800 bg-white border border-yellow-200 rounded hover:bg-yellow-50 transition-colors"
               >
                 {reply}
               </button>

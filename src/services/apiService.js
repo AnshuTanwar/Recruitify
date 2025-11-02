@@ -285,7 +285,7 @@ class ApiService {
   
   // // Get candidate's uploaded resumes
   static async getCandidateResumes() {
-    return this.makeAuthenticatedRequest('/api/candidate/resumes');
+    return this.makeAuthenticatedRequest('/api/candidate/resumeslist');
   }
 
   // Upload resume
@@ -519,7 +519,7 @@ class ApiService {
 
   // Get all chat rooms for recruiter
   static async getChatRooms() {
-    return this.makeAuthenticatedRequest('/api/chat/rooms');
+    return this.makeAuthenticatedRequest('/api/chat/recruiter-rooms');
   }
 
   // Get all chat rooms for candidate

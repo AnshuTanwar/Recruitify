@@ -35,14 +35,14 @@ const CandidateMessages = () => {
       const chatRoomsResponse = await ApiService.getCandidateChatRooms();
       
       // Process existing chat rooms
-      const existingChatRooms = (chatRoomsResponse.chatRooms || []).map(room => ({
+      const existingChatRooms = (chatRoomsResponse.rooms || []).map(room => ({
         id: room._id,
         applicationId: room.candidate?._id,
         recruiterName: room.recruiter?.fullName || 'Recruiter',
         companyName: room.job?.company || 'Company',
         jobTitle: room.job?.jobName || 'Job Position',
-        lastMessage: room.lastMessage?.text || 'No messages yet',
-        lastMessageTime: room.lastMessage?.createdAt ? new Date(room.lastMessage.createdAt) : new Date(room.createdAt),
+        lastMessage: room.lastMessage || 'No messages yet',
+        lastMessageTime: room.lastMessageAt ? new Date(room.lastMessageAt) : new Date(room.createdAt),
         unreadCount: 0, // TODO: Calculate actual unread count
         isActive: selectedRoomId === room._id,
         roomData: room
@@ -115,7 +115,7 @@ const CandidateMessages = () => {
 
   return (
     <DashboardLayout>
-      <div className="h-full flex bg-white rounded-lg shadow-lg overflow-hidden">
+      <div className="h-[calc(100vh-8rem)] flex bg-white rounded-lg shadow-lg overflow-hidden">
         {/* Chat List Sidebar */}
         <div className="w-1/3 border-r border-gray-200 flex flex-col">
           {/* Header */}

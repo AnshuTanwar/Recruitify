@@ -118,13 +118,18 @@ const ResumeAnalyzer = () => {
   };
 
   return (
-    <div className="max-w-6xl mx-auto p-6 space-y-6">
+    <div className="w-full max-w-6xl mx-auto space-y-6">
       {/* Header */}
-      <div className="text-center">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">
-          📊 Resume Analyzer
+      <div className="text-center mb-8">
+        <div className="inline-flex items-center justify-center mb-4">
+          <div className="bg-gradient-to-r from-purple-600 to-blue-600 p-3 rounded-xl shadow-lg">
+            <BarChart3 className="h-8 w-8 text-white" />
+          </div>
+        </div>
+        <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent mb-3">
+          Resume Analyzer
         </h1>
-        <p className="text-gray-600">
+        <p className="text-gray-400 text-sm sm:text-base md:text-lg max-w-2xl mx-auto px-4">
           Get AI-powered insights on how well your resume matches job requirements
         </p>
       </div>
