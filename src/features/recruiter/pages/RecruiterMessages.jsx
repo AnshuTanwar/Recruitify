@@ -1,243 +1,409 @@
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import { 
-  Search, 
-  Send, 
-  Paperclip, 
-  Smile, 
-  MoreVertical,
-  Phone,
-  Video,
-  Info,
-  Archive,
-  Trash2,
-  Star,
-  Clock,
-  CheckCircle,
-  Circle
-} from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
+import { MessageCircle, Search, User, Building2, Clock, Plus, Users } from 'lucide-react';
 import RecruiterLayout from '../components/RecruiterLayout.jsx';
+import RecruiterChat from '../components/RecruiterChat.jsx';
+import ApiService from '../../../services/apiService';
 
 const RecruiterMessages = () => {
-  const [selectedChat, setSelectedChat] = useState(0);
-  const [message, setMessage] = useState('');
+  const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [chatRooms, setChatRooms] = useState([]);
+  const [selectedRoomId, setSelectedRoomId] = useState(searchParams.get('roomId') || localStorage.getItem('selectedRoomId') || null);
+  const [selectedApplicationId, setSelectedApplicationId] = useState(searchParams.get('applicationId') || localStorage.getItem('selectedApplicationId') || null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [applications, setApplications] = useState([]);
+  const [showNewChatModal, setShowNewChatModal] = useState(false);
 
-  // Get real conversations from localStorage or API
-  const conversations = [];
-
-  // Get real messages from localStorage or API
-  const messages = [];
-
-  const handleSendMessage = () => {
-    if (message.trim()) {
-      // Here you would typically send the message to backend
-      setMessage('');
+  // Helper function to update selected chat with persistence
+  const updateSelectedChat = (roomId, applicationId) => {
+    setSelectedRoomId(roomId);
+    setSelectedApplicationId(applicationId);
+    
+    // Update URL params
+    if (roomId && applicationId) {
+      setSearchParams({ roomId, applicationId });
+      // Store in localStorage for persistence
+      localStorage.setItem('selectedRoomId', roomId);
+      localStorage.setItem('selectedApplicationId', applicationId);
+    } else {
+      setSearchParams({});
+      localStorage.removeItem('selectedRoomId');
+      localStorage.removeItem('selectedApplicationId');
     }
   };
 
-  const filteredConversations = conversations.filter(conv =>
-    conv.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    conv.role.toLowerCase().includes(searchTerm.toLowerCase())
+  // Fetch existing chat rooms and applications
+  const fetchChatData = async () => {
+    try {
+      setLoading(true);
+      
+      // Fetch both chat rooms and applications in parallel
+      const [chatRoomsResponse, applicationsResponse] = await Promise.all([
+        ApiService.getChatRooms(),
+        ApiService.getRecruiterApplications()
+      ]);
+      
+      // Filter applications that are suitable for chat (not rejected)
+      const chatableApplications = applicationsResponse.applications?.filter(
+        app => app.status !== 'Rejected' && app.status !== 'Withdrawn'
+      ) || [];
+      
+      setApplications(chatableApplications);
+      
+      // Process existing chat rooms
+      const existingChatRooms = (chatRoomsResponse.chatRooms || []).map(room => ({
+        id: room._id,
+        applicationId: room.candidate?._id,
+        candidateName: room.candidate?.fullName || 'Candidate',
+        candidateEmail: room.candidate?.email || '',
+        jobTitle: room.job?.jobName || 'Job Position',
+        lastMessage: room.lastMessage?.text || 'No messages yet',
+        lastMessageTime: room.lastMessage?.createdAt ? new Date(room.lastMessage.createdAt) : new Date(room.createdAt),
+        unreadCount: 0, // TODO: Calculate actual unread count
+        isActive: selectedRoomId === room._id,
+        roomData: room
+      }));
+
+      setChatRooms(existingChatRooms);
+    } catch (error) {
+      console.error('Error fetching chat data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchChatData();
+  }, []);
+
+  // Update active states when selectedRoomId changes
+  useEffect(() => {
+    if (chatRooms.length > 0) {
+      setChatRooms(prev => prev.map(room => ({
+        ...room,
+        isActive: room.id === selectedRoomId
+      })));
+    }
+  }, [selectedRoomId]);
+
+  // Sync URL parameters with state
+  useEffect(() => {
+    const roomId = searchParams.get('roomId');
+    const applicationId = searchParams.get('applicationId');
+    
+    if (roomId && applicationId) {
+      setSelectedRoomId(roomId);
+      setSelectedApplicationId(applicationId);
+      localStorage.setItem('selectedRoomId', roomId);
+      localStorage.setItem('selectedApplicationId', applicationId);
+    }
+  }, [searchParams]);
+
+  // Validate selected room exists in chat rooms
+  useEffect(() => {
+    if (selectedRoomId && chatRooms.length > 0) {
+      const roomExists = chatRooms.find(room => room.id === selectedRoomId);
+      if (!roomExists) {
+        // Room doesn't exist, clear selection
+        updateSelectedChat(null, null);
+      }
+    }
+  }, [selectedRoomId, chatRooms]);
+
+  const filteredChats = chatRooms.filter(chat => 
+    chat.candidateName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    chat.jobTitle.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    chat.candidateEmail.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const handleStartNewChat = async (application) => {
+    try {
+      setLoading(true);
+      
+      // Debug: Check application structure
+      console.log('Application object:', application);
+      
+      // Get IDs - handle both nested objects and direct IDs
+      const jobId = application.job?._id || application.job?.id || application.job;
+      const candidateId = application.candidate?._id || application.candidate?.id || application.candidate;
+      
+      console.log('JobId:', jobId, 'CandidateId:', candidateId);
+      
+      if (!jobId || !candidateId) {
+        alert('Missing job or candidate information. Please try again.');
+        return;
+      }
+      
+      // Initiate chat room with candidate
+      const response = await ApiService.initiateChatRoom(jobId, candidateId);
+      
+      if (response.room) {
+        const newChatRoom = {
+          id: response.room._id,
+          applicationId: application._id,
+          candidateName: application.candidate?.fullName || 'Candidate',
+          candidateEmail: application.candidate?.email || '',
+          jobTitle: application.job?.jobName || 'Job Position',
+          lastMessage: 'Chat started',
+          lastMessageTime: new Date(),
+          unreadCount: 0,
+          isActive: true,
+          application: application
+        };
+        
+        // Add to chat rooms if not already exists
+        setChatRooms(prev => {
+          const exists = prev.find(room => room.id === newChatRoom.id);
+          if (exists) {
+            return prev.map(room => ({
+              ...room,
+              isActive: room.id === newChatRoom.id
+            }));
+          }
+          return [newChatRoom, ...prev];
+        });
+        
+        updateSelectedChat(response.room._id, application._id);
+        setShowNewChatModal(false);
+        
+        // Refresh chat list to get the latest data
+        fetchChatData();
+      }
+    } catch (error) {
+      console.error('Error starting chat:', error);
+      alert('Failed to start chat. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleChatSelect = (chatRoom) => {
+    updateSelectedChat(chatRoom.id, chatRoom.applicationId);
+    
+    // Clear unread count for selected chat
+    setChatRooms(prev => prev.map(room => ({
+      ...room,
+      unreadCount: room.id === chatRoom.id ? 0 : room.unreadCount
+    })));
+  };
+
+  const formatTime = (date) => {
+    const now = new Date();
+    const messageDate = new Date(date);
+    const diffInHours = (now - messageDate) / (1000 * 60 * 60);
+    
+    if (diffInHours < 24) {
+      return messageDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    } else if (diffInHours < 168) { // 7 days
+      return messageDate.toLocaleDateString([], { weekday: 'short' });
+    } else {
+      return messageDate.toLocaleDateString([], { month: 'short', day: 'numeric' });
+    }
+  };
+
+  const availableApplications = applications.filter(app => 
+    !chatRooms.some(room => room.applicationId === app._id)
   );
 
   return (
     <RecruiterLayout>
-      <div className="h-[calc(100vh-8rem)] flex bg-white rounded-xl shadow-sm overflow-hidden">
-        {/* Conversations List */}
-        <div className="w-full md:w-80 border-r border-gray-200 flex flex-col">
+      <div className="h-full flex bg-white rounded-lg shadow-lg overflow-hidden">
+        {/* Chat List Sidebar */}
+        <div className="w-1/3 border-r border-gray-200 flex flex-col">
           {/* Header */}
           <div className="p-4 border-b border-gray-200">
-            <h2 className="text-xl font-bold text-gray-900 mb-4">Messages</h2>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-semibold text-gray-900">Messages</h2>
+              <button
+                onClick={() => setShowNewChatModal(true)}
+                className="flex items-center space-x-1 px-3 py-1 bg-green-100 text-green-700 rounded-full hover:bg-green-200 text-sm"
+              >
+                <Plus className="h-4 w-4" />
+                <span>New Chat</span>
+              </button>
+            </div>
+            
+            {/* Search */}
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
               <input
                 type="text"
                 placeholder="Search conversations..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
               />
             </div>
           </div>
 
-          {/* Conversations */}
+          {/* Chat List */}
           <div className="flex-1 overflow-y-auto">
-            {filteredConversations.map((conversation, index) => (
-              <motion.div
-                key={conversation.id}
-                className={`p-4 border-b border-gray-100 cursor-pointer transition-all duration-300 ${
-                  selectedChat === index ? 'bg-teal-50 border-r-2 border-r-teal-500' : 'hover:bg-gray-50'
-                }`}
-                onClick={() => setSelectedChat(index)}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.3, delay: index * 0.1 }}
-              >
-                <div className="flex items-start space-x-3">
-                  <div className="relative">
-                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-teal-500 to-purple-600 flex items-center justify-center text-white font-medium">
-                      {conversation.avatar}
-                    </div>
-                    {conversation.online && (
-                      <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white"></div>
-                    )}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between mb-1">
-                      <div className="flex items-center space-x-2">
-                        <h3 className="font-semibold text-gray-900 truncate">{conversation.name}</h3>
-                        {conversation.starred && (
-                          <Star className="w-4 h-4 text-yellow-500 fill-current" />
+            {loading ? (
+              <div className="flex items-center justify-center p-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
+              </div>
+            ) : filteredChats.length === 0 ? (
+              <div className="flex flex-col items-center justify-center p-8 text-center">
+                <MessageCircle className="h-12 w-12 text-gray-300 mb-4" />
+                <p className="text-gray-500 mb-2">No conversations yet</p>
+                <button
+                  onClick={() => setShowNewChatModal(true)}
+                  className="flex items-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                >
+                  <Plus className="h-4 w-4" />
+                  <span>Start New Chat</span>
+                </button>
+              </div>
+            ) : (
+              <div className="divide-y divide-gray-100">
+                {filteredChats.map((chat) => (
+                  <div
+                    key={chat.id}
+                    onClick={() => handleChatSelect(chat)}
+                    className={`p-4 cursor-pointer hover:bg-gray-50 transition-colors ${
+                      selectedRoomId === chat.id ? 'bg-green-50 border-r-2 border-green-500' : ''
+                    }`}
+                  >
+                    <div className="flex items-start space-x-3">
+                      <div className="w-10 h-10 bg-gradient-to-r from-green-500 to-blue-600 rounded-full flex items-center justify-center flex-shrink-0">
+                        <User className="h-5 w-5 text-white" />
+                      </div>
+                      
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between">
+                          <p className="text-sm font-medium text-gray-900 truncate">
+                            {chat.candidateName}
+                          </p>
+                          <span className="text-xs text-gray-500">
+                            {formatTime(chat.lastMessageTime)}
+                          </span>
+                        </div>
+                        
+                        <p className="text-xs text-gray-500 truncate mt-1">
+                          {chat.candidateEmail}
+                        </p>
+                        
+                        <p className="text-sm text-green-600 font-medium truncate mt-1">
+                          {chat.jobTitle}
+                        </p>
+                        
+                        <p className="text-sm text-gray-600 truncate mt-1">
+                          {chat.lastMessage}
+                        </p>
+                        
+                        {chat.unreadCount > 0 && (
+                          <div className="flex items-center justify-between mt-2">
+                            <span></span>
+                            <span className="bg-green-500 text-white text-xs px-2 py-1 rounded-full">
+                              {chat.unreadCount}
+                            </span>
+                          </div>
                         )}
                       </div>
-                      <span className="text-xs text-gray-500">{conversation.time}</span>
-                    </div>
-                    <p className="text-sm text-gray-600 mb-1">{conversation.role}</p>
-                    <div className="flex items-center justify-between">
-                      <p className="text-sm text-gray-500 truncate flex-1">{conversation.lastMessage}</p>
-                      {conversation.unread > 0 && (
-                        <span className="ml-2 bg-teal-500 text-white text-xs rounded-full px-2 py-1 min-w-[20px] text-center">
-                          {conversation.unread}
-                        </span>
-                      )}
                     </div>
                   </div>
-                </div>
-              </motion.div>
-            ))}
+                ))}
+              </div>
+            )}
           </div>
         </div>
 
         {/* Chat Area */}
         <div className="flex-1 flex flex-col">
-          {/* Chat Header */}
-          <div className="p-4 border-b border-gray-200 bg-white">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <div className="relative">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-teal-500 to-purple-600 flex items-center justify-center text-white font-medium">
-                    {filteredConversations[selectedChat]?.avatar}
-                  </div>
-                  {filteredConversations[selectedChat]?.online && (
-                    <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
-                  )}
-                </div>
-                <div>
-                  <h3 className="font-semibold text-gray-900">{filteredConversations[selectedChat]?.name}</h3>
-                  <p className="text-sm text-gray-500">{filteredConversations[selectedChat]?.role}</p>
-                </div>
-              </div>
-              <div className="flex items-center space-x-2">
-                <motion.button
-                  className="p-2 text-gray-600 hover:text-teal-600 hover:bg-gray-100 rounded-lg transition-colors duration-300"
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
+          {selectedRoomId ? (
+            <RecruiterChat
+              roomId={selectedRoomId}
+              applicationId={selectedApplicationId}
+              onClose={() => {
+                updateSelectedChat(null, null);
+              }}
+            />
+          ) : (
+            <div className="flex-1 flex items-center justify-center bg-gray-50">
+              <div className="text-center">
+                <MessageCircle className="mx-auto h-16 w-16 text-gray-300 mb-4" />
+                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                  Welcome to Messages
+                </h3>
+                <p className="text-gray-500 mb-4">
+                  Select a conversation or start a new chat with candidates
+                </p>
+                <button
+                  onClick={() => setShowNewChatModal(true)}
+                  className="flex items-center space-x-2 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 mx-auto"
                 >
-                  <Phone className="w-5 h-5" />
-                </motion.button>
-                <motion.button
-                  className="p-2 text-gray-600 hover:text-teal-600 hover:bg-gray-100 rounded-lg transition-colors duration-300"
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
-                >
-                  <Video className="w-5 h-5" />
-                </motion.button>
-                <motion.button
-                  className="p-2 text-gray-600 hover:text-teal-600 hover:bg-gray-100 rounded-lg transition-colors duration-300"
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
-                >
-                  <Info className="w-5 h-5" />
-                </motion.button>
-                <motion.button
-                  className="p-2 text-gray-600 hover:text-teal-600 hover:bg-gray-100 rounded-lg transition-colors duration-300"
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
-                >
-                  <MoreVertical className="w-5 h-5" />
-                </motion.button>
+                  <Plus className="h-5 w-5" />
+                  <span>Start New Chat</span>
+                </button>
               </div>
             </div>
-          </div>
+          )}
+        </div>
+      </div>
 
-          {/* Messages */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-4">
-            {messages.map((msg, index) => (
-              <motion.div
-                key={msg.id}
-                className={`flex ${msg.sender === 'recruiter' ? 'justify-end' : 'justify-start'}`}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3, delay: index * 0.1 }}
-              >
-                <div className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
-                  msg.sender === 'recruiter'
-                    ? 'bg-gradient-to-r from-teal-500 to-purple-600 text-white'
-                    : 'bg-gray-100 text-gray-900'
-                }`}>
-                  <p className="text-sm">{msg.content}</p>
-                  <div className={`flex items-center justify-between mt-1 ${
-                    msg.sender === 'recruiter' ? 'text-white/80' : 'text-gray-500'
-                  }`}>
-                    <span className="text-xs">{msg.time}</span>
-                    {msg.sender === 'recruiter' && (
-                      <div className="ml-2">
-                        {msg.status === 'read' ? (
-                          <CheckCircle className="w-3 h-3" />
-                        ) : msg.status === 'delivered' ? (
-                          <CheckCircle className="w-3 h-3 opacity-60" />
-                        ) : (
-                          <Clock className="w-3 h-3 opacity-60" />
-                        )}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-
-          {/* Message Input */}
-          <div className="p-4 border-t border-gray-200 bg-white">
-            <div className="flex items-center space-x-3">
-              <motion.button
-                className="p-2 text-gray-600 hover:text-teal-600 hover:bg-gray-100 rounded-lg transition-colors duration-300"
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-              >
-                <Paperclip className="w-5 h-5" />
-              </motion.button>
-              <div className="flex-1 relative">
-                <input
-                  type="text"
-                  value={message}
-                  onChange={(e) => setMessage(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-                  placeholder="Type a message..."
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 pr-12"
-                />
-                <motion.button
-                  className="absolute right-2 top-1/2 transform -translate-y-1/2 p-1 text-gray-600 hover:text-teal-600 rounded transition-colors duration-300"
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
+      {/* New Chat Modal */}
+      {showNewChatModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-96 overflow-hidden">
+            <div className="p-6 border-b border-gray-200">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold text-gray-900">Start New Chat</h3>
+                <button
+                  onClick={() => setShowNewChatModal(false)}
+                  className="text-gray-400 hover:text-gray-600"
                 >
-                  <Smile className="w-5 h-5" />
-                </motion.button>
+                  ×
+                </button>
               </div>
-              <motion.button
-                onClick={handleSendMessage}
-                className="p-2 bg-gradient-to-r from-teal-500 to-purple-600 text-white rounded-lg hover:shadow-lg transition-all duration-300 disabled:opacity-50"
-                disabled={!message.trim()}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <Send className="w-5 h-5" />
-              </motion.button>
+              <p className="text-gray-600 mt-2">Select a candidate from your applications to start chatting</p>
+            </div>
+            
+            <div className="max-h-80 overflow-y-auto">
+              {availableApplications.length === 0 ? (
+                <div className="p-8 text-center">
+                  <Users className="mx-auto h-12 w-12 text-gray-300 mb-4" />
+                  <p className="text-gray-500">No available candidates to chat with</p>
+                  <p className="text-sm text-gray-400 mt-2">
+                    All eligible candidates already have active conversations
+                  </p>
+                </div>
+              ) : (
+                <div className="divide-y divide-gray-100">
+                  {availableApplications.map((application) => (
+                    <div
+                      key={application._id}
+                      onClick={() => handleStartNewChat(application)}
+                      className="p-4 hover:bg-gray-50 cursor-pointer transition-colors"
+                    >
+                      <div className="flex items-center space-x-3">
+                        <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                          <User className="h-5 w-5 text-white" />
+                        </div>
+                        <div className="flex-1">
+                          <p className="font-medium text-gray-900">
+                            {application.candidate?.fullName || 'Candidate'}
+                          </p>
+                          <p className="text-sm text-gray-500">
+                            {application.candidate?.email}
+                          </p>
+                          <p className="text-sm text-green-600 font-medium">
+                            Applied for: {application.job?.jobName}
+                          </p>
+                          <p className="text-xs text-gray-400">
+                            Status: {application.status} • Applied {new Date(application.appliedAt).toLocaleDateString()}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </div>
-      </div>
+      )}
     </RecruiterLayout>
   );
 };

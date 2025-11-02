@@ -14,7 +14,8 @@ import {
   MessageCircle,
   HelpCircle,
   Zap,
-  Search
+  Search,
+  BarChart3
 } from 'lucide-react';
 import { useAuth } from '../../../contexts/AuthContext.jsx';
 
@@ -46,6 +47,13 @@ function Sidebar({ isMobileMenuOpen, onMobileClose }) {
       path: '/dashboard/messages',
       icon: MessageCircle,
       count: null
+    },
+    {
+      name: 'Resume Analyzer',
+      path: '/dashboard/resume-analyzer',
+      icon: BarChart3,
+      count: null,
+      isNew: true
     },
     {
       name: 'Profile',
@@ -155,6 +163,16 @@ function Sidebar({ isMobileMenuOpen, onMobileClose }) {
                   <div className="flex items-center space-x-2 xs:space-x-3 min-w-0 flex-1">
                     <Icon className={`w-4 h-4 xs:w-5 xs:h-5 flex-shrink-0 ${isActive ? 'text-teal-400' : 'text-white/70 group-hover:text-white'}`} />
                     <span className="font-medium text-sm xs:text-base truncate">{item.name}</span>
+                    {item.isNew && (
+                      <motion.span
+                        className="bg-gradient-to-r from-yellow-400 to-orange-500 text-black text-xs px-1.5 py-0.5 rounded-full font-bold"
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        transition={{ duration: 0.3, delay: 0.5 + index * 0.1 }}
+                      >
+                        NEW
+                      </motion.span>
+                    )}
                   </div>
                   
                   {item.count && (

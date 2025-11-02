@@ -4,7 +4,9 @@
  */
 
 // Use local backend in development, deployed backend in production
-const API_BASE_URL ='https://recruitify-backend-f2zw.onrender.com';
+const API_BASE_URL = process.env.NODE_ENV === 'production' 
+  ? 'https://recruitify-backend-f2zw.onrender.com'
+  : 'http://localhost:5050';
 
 class ApiService {
   // Helper method to make API calls
@@ -495,6 +497,99 @@ class ApiService {
       console.warn('Could not fetch applications count:', error);
       return 0;
     }
+  }
+
+  // ==================== CHAT APIs ====================
+  
+  // Initiate chat room (Recruiter only)
+  static async initiateChatRoom(jobId, candidateId) {
+    return this.makeAuthenticatedRequest('/api/chat/initiate', {
+      method: 'POST',
+      body: JSON.stringify({ jobId, candidateId }),
+    });
+  }
+
+  // Send message to chat room
+  static async sendChatMessage(roomId, text) {
+    return this.makeAuthenticatedRequest(`/api/chat/${roomId}/message`, {
+      method: 'POST',
+      body: JSON.stringify({ text }),
+    });
+  }
+
+  // Get all chat rooms for recruiter
+  static async getChatRooms() {
+    return this.makeAuthenticatedRequest('/api/chat/rooms');
+  }
+
+  // Get all chat rooms for candidate
+  static async getCandidateChatRooms() {
+    return this.makeAuthenticatedRequest('/api/chat/candidate-rooms');
+  }
+
+  // Get chat messages with pagination
+  static async getChatMessages(roomId, page = 1, limit = 20) {
+    return this.makeAuthenticatedRequest(`/api/chat/${roomId}/messages?page=${page}&limit=${limit}`);
+  }
+
+  // Mark messages as seen
+  static async markMessagesAsSeen(roomId) {
+    return this.makeAuthenticatedRequest(`/api/chat/${roomId}/seen`, {
+      method: 'PUT',
+    });
+  }
+
+  // Close/delete chat room
+  static async closeChatRoom(roomId) {
+    return this.makeAuthenticatedRequest(`/api/chat/${roomId}`, {
+      method: 'DELETE',
+    });
+  }
+
+  // Get AI question suggestions for recruiters
+  static async getQuestionSuggestions(applicationId) {
+    return this.makeAuthenticatedRequest(`/api/chat/${applicationId}/questions`);
+  }
+
+  // Get smart reply suggestions for candidates
+  static async getSmartReplies(messageId) {
+    return this.makeAuthenticatedRequest(`/api/chat/${messageId}/smart-reply`, {
+      method: 'POST',
+    });
+  }
+
+  // ==================== RESUME ANALYZER APIs ====================
+  
+  // Analyze resume against job description
+  static async analyzeResume(analysisData) {
+    // analysisData: { jobTitle, jobDescription, resumeKey?, newFile? }
+    const formData = new FormData();
+    
+    formData.append('jobTitle', analysisData.jobTitle);
+    formData.append('jobDescription', analysisData.jobDescription);
+    
+    if (analysisData.resumeKey) {
+      formData.append('resumeKey', analysisData.resumeKey);
+    }
+    
+    if (analysisData.newFile) {
+      formData.append('newFile', analysisData.newFile);
+    }
+
+    // For FormData uploads, we need to remove Content-Type but keep Authorization
+    const token = localStorage.getItem('authToken');
+    const headers = {};
+    
+    if (token && !token.startsWith('demo-token-') && token !== 'null' && token !== 'undefined') {
+      headers.Authorization = `Bearer ${token}`;
+    }
+    
+    return this.makeRequest('/api/candidate/resume/analyze', {
+      method: 'POST',
+      headers, // Only Authorization header, no Content-Type for FormData
+      body: formData,
+      credentials: 'include',
+    });
   }
 }
 
