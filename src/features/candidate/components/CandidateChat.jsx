@@ -115,6 +115,7 @@ const CandidateChat = ({ roomId, onClose }) => {
       
       // Listen for new messages
       const handleNewMessage = (message) => {
+        console.log('📨 Real-time message received:', message);
         setMessages(prev => [...prev, message]);
         setTimeout(scrollToBottom, 100);
         socketService.markSeen(roomId);
