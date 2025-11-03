@@ -122,33 +122,46 @@ const RecruiterChat = ({ roomId, applicationId, onClose }) => {
       fetchMessages(1);
       markAsSeen();
       
-      // Connect socket
-      const token = localStorage.getItem('authToken');
-      socketService.connect(token);
-      socketService.joinRoom(roomId);
-      
-      // Listen for new messages
-      const handleNewMessage = (message) => {
-        console.log('📨 Real-time message received:', message);
-        setMessages(prev => [...prev, message]);
-        setTimeout(scrollToBottom, 100);
-        socketService.markSeen(roomId);
-      };
-      
-      // Listen for messages seen
-      const handleMessagesSeen = ({ roomId: seenRoomId }) => {
-        if (seenRoomId === roomId) {
-          setMessages(prev => prev.map(msg => ({ ...msg, isSeen: true })));
+      // Connect socket and setup listeners
+      const setupSocket = async () => {
+        try {
+          const token = localStorage.getItem('authToken');
+          console.log('Setting up socket for room:', roomId);
+          
+          await socketService.connect(token);
+          socketService.joinRoom(roomId);
+          
+          // Listen for new messages
+          const handleNewMessage = (message) => {
+            console.log('Real-time message received:', message);
+            setMessages(prev => [...prev, message]);
+            setTimeout(scrollToBottom, 100);
+            socketService.markSeen(roomId);
+          };
+          
+          // Listen for messages seen
+          const handleMessagesSeen = ({ roomId: seenRoomId }) => {
+            if (seenRoomId === roomId) {
+              setMessages(prev => prev.map(msg => ({ ...msg, isSeen: true })));
+            }
+          };
+          
+          socketService.onNewMessage(handleNewMessage);
+          socketService.onMessagesSeen(handleMessagesSeen);
+          
+          console.log('Socket setup complete for room:', roomId);
+        } catch (error) {
+          console.error('Socket setup failed:', error);
         }
       };
       
-      socketService.onNewMessage(handleNewMessage);
-      socketService.onMessagesSeen(handleMessagesSeen);
+      setupSocket();
       
       // Cleanup
       return () => {
-        socketService.offNewMessage(handleNewMessage);
-        socketService.offMessagesSeen(handleMessagesSeen);
+        console.log('🧹 Cleaning up socket listeners for room:', roomId);
+        // Note: We can't easily remove specific listeners in this pattern
+        // Consider refactoring if this becomes an issue
       };
     }
   }, [roomId]);

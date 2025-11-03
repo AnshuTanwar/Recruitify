@@ -8,10 +8,13 @@ class SocketService {
 
     connect(token) {
         if (this.socket?.connected) {
-            return this.socket;
+            console.log('Socket already connected:', this.socket.id);
+            return Promise.resolve(this.socket);
         }
 
         const SOCKET_URL = import.meta.env.VITE_API_URL || 'https://recruitify-backend-f2zw.onrender.com';
+        console.log('Connecting to socket:', SOCKET_URL);
+        console.log('Using token:', token ? 'Token present' : 'NO TOKEN!');
 
         this.socket = io(SOCKET_URL, {
             auth: {
@@ -23,21 +26,29 @@ class SocketService {
             reconnectionAttempts: 5
         });
 
-        this.socket.on('connect', () => {
-            console.log(' Socket connected:', this.socket.id);
-            this.connected = true;
-        });
+        return new Promise((resolve, reject) => {
+            const timeout = setTimeout(() => {
+                reject(new Error('Socket connection timeout'));
+            }, 10000);
 
-        this.socket.on('disconnect', (reason) => {
-            console.log('Socket disconnected:', reason);
-            this.connected = false;
-        });
+            this.socket.on('connect', () => {
+                clearTimeout(timeout);
+                console.log('Socket connected:', this.socket.id);
+                this.connected = true;
+                resolve(this.socket);
+            });
 
-        this.socket.on('connect_error', (error) => {
-            console.error('Socket connection error:', error);
-        });
+            this.socket.on('disconnect', (reason) => {
+                console.log('Socket disconnected:', reason);
+                this.connected = false;
+            });
 
-        return this.socket;
+            this.socket.on('connect_error', (error) => {
+                clearTimeout(timeout);
+                console.error('Socket connection error:', error.message);
+                reject(error);
+            });
+        });
     }
 
     disconnect() {
@@ -51,14 +62,14 @@ class SocketService {
     joinRoom(roomId) {
         if (this.socket?.connected) {
             this.socket.emit('joinRoom', roomId);
-            console.log('📥 Joined room:', roomId);
+            console.log('Joined room:', roomId);
         }
     }
 
     leaveRoom(roomId) {
         if (this.socket?.connected) {
             this.socket.emit('leaveRoom', roomId);
-            console.log('📤 Left room:', roomId);
+            console.log('Left room:', roomId);
         }
     }
 
