@@ -118,20 +118,39 @@ const RecruiterChat = ({ roomId, applicationId, onClose }) => {
 
   useEffect(() => {
     if (roomId) {
+      // Initial fetch
       fetchMessages(1);
       markAsSeen();
+      
+      // Connect socket
+      const token = localStorage.getItem('authToken');
+      socketService.connect(token);
+      socketService.joinRoom(roomId);
+      
+      // Listen for new messages
+      const handleNewMessage = (message) => {
+        setMessages(prev => [...prev, message]);
+        setTimeout(scrollToBottom, 100);
+        socketService.markSeen(roomId);
+      };
+      
+      // Listen for messages seen
+      const handleMessagesSeen = ({ roomId: seenRoomId }) => {
+        if (seenRoomId === roomId) {
+          setMessages(prev => prev.map(msg => ({ ...msg, isSeen: true })));
+        }
+      };
+      
+      socketService.onNewMessage(handleNewMessage);
+      socketService.onMessagesSeen(handleMessagesSeen);
+      
+      // Cleanup
+      return () => {
+        socketService.offNewMessage(handleNewMessage);
+        socketService.offMessagesSeen(handleMessagesSeen);
+      };
     }
   }, [roomId]);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (roomId && !isTyping) {
-        fetchMessages(1);
-      }
-    }, 3000); // Poll every 3 seconds, but not while typing
-
-    return () => clearInterval(interval);
-  }, [roomId, isTyping]);
 
   const handleKeyPress = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {

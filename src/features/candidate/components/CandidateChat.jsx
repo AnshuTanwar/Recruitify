@@ -109,7 +109,7 @@ const CandidateChat = ({ roomId, onClose }) => {
       markAsSeen();
       
       // Connect socket
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('authToken');
       socketService.connect(token);
       socketService.joinRoom(roomId);
       
