@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { MessageCircle, Send, Bot, User, Clock, CheckCheck } from 'lucide-react';
 import ApiService from '../../../services/apiService';
+import socketService from '../../../services/socketService';
 
 const CandidateChat = ({ roomId, onClose }) => {
   const [messages, setMessages] = useState([]);
@@ -48,19 +49,14 @@ const CandidateChat = ({ roomId, onClose }) => {
     if (!newMessage.trim()) return;
     
     try {
-      setLoading(true);
-      await ApiService.sendChatMessage(roomId, newMessage.trim());
+      // Send via Socket.IO for real-time delivery
+      socketService.sendMessage(roomId, newMessage.trim());
       setNewMessage('');
       setSmartReplies([]);
       setShowSmartReplies(false);
-      
-      // Refresh messages
-      await fetchMessages(1);
     } catch (error) {
       console.error('Error sending message:', error);
       alert('Failed to send message. Please try again.');
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -108,20 +104,39 @@ const CandidateChat = ({ roomId, onClose }) => {
 
   useEffect(() => {
     if (roomId) {
+      // Initial fetch
       fetchMessages(1);
       markAsSeen();
+      
+      // Connect socket
+      const token = localStorage.getItem('token');
+      socketService.connect(token);
+      socketService.joinRoom(roomId);
+      
+      // Listen for new messages
+      const handleNewMessage = (message) => {
+        setMessages(prev => [...prev, message]);
+        setTimeout(scrollToBottom, 100);
+        socketService.markSeen(roomId);
+      };
+      
+      // Listen for messages seen
+      const handleMessagesSeen = ({ roomId: seenRoomId }) => {
+        if (seenRoomId === roomId) {
+          setMessages(prev => prev.map(msg => ({ ...msg, isSeen: true })));
+        }
+      };
+      
+      socketService.onNewMessage(handleNewMessage);
+      socketService.onMessagesSeen(handleMessagesSeen);
+      
+      // Cleanup
+      return () => {
+        socketService.offNewMessage(handleNewMessage);
+        socketService.offMessagesSeen(handleMessagesSeen);
+      };
     }
   }, [roomId]);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (roomId && !isTyping) {
-        fetchMessages(1);
-      }
-    }, 3000); // Poll every 3 seconds, but not while typing
-
-    return () => clearInterval(interval);
-  }, [roomId, isTyping]);
 
   const handleKeyPress = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -263,7 +278,15 @@ const CandidateChat = ({ roomId, onClose }) => {
             value={newMessage}
             onChange={(e) => {
               setNewMessage(e.target.value);
-              setIsTyping(e.target.value.length > 0);
+              const typing = e.target.value.length > 0;
+              setIsTyping(typing);
+              
+              // Emit typing indicator
+              if (typing) {
+                socketService.emitTyping(roomId);
+              } else {
+                socketService.emitStopTyping(roomId);
+              }
             }}
             onKeyPress={handleKeyPress}
             onFocus={() => setIsTyping(true)}

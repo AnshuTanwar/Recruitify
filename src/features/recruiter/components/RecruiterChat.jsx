@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { MessageCircle, Send, Bot, User, Clock, CheckCheck, Lightbulb } from 'lucide-react';
 import ApiService from '../../../services/apiService';
+import socketService from '../../../services/socketService';
 
 const RecruiterChat = ({ roomId, applicationId, onClose }) => {
   const [messages, setMessages] = useState([]);
@@ -48,19 +49,14 @@ const RecruiterChat = ({ roomId, applicationId, onClose }) => {
     if (!newMessage.trim()) return;
     
     try {
-      setLoading(true);
-      await ApiService.sendChatMessage(roomId, newMessage.trim());
+      // Send via Socket.IO for real-time delivery
+      socketService.sendMessage(roomId, newMessage.trim());
       setNewMessage('');
       setQuestionSuggestions([]);
       setShowSuggestions(false);
-      
-      // Refresh messages
-      await fetchMessages(1);
     } catch (error) {
       console.error('Error sending message:', error);
       alert('Failed to send message. Please try again.');
-    } finally {
-      setLoading(false);
     }
   };
 

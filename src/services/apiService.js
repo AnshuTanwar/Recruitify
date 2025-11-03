@@ -4,9 +4,7 @@
  */
 
 // Use local backend in development, deployed backend in production
-const API_BASE_URL = process.env.NODE_ENV === 'production' 
-  ? 'https://recruitify-backend-f2zw.onrender.com'
-  : 'http://localhost:5050';
+const API_BASE_URL = process.env.API_BASE_URL || 'http://localhost:5050';
 
 class ApiService {
   // Helper method to make API calls
