@@ -11,7 +11,7 @@ class SocketService {
             return this.socket;
         }
 
-        const SOCKET_URL = process.env.SOCKET_URL || 'http://localhost:5050';
+        const SOCKET_URL = import.meta.env.VITE_API_URL || 'https://recruitify-backend-f2zw.onrender.com';
 
         this.socket = io(SOCKET_URL, {
             auth: {

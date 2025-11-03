@@ -88,7 +88,7 @@ export const AuthProvider = ({ children }) => {
           endpoint = '/api/candidate/profile';
       }
 
-      const response = await fetch(`${process.env.NODE_ENV === 'development' ? 'http://localhost:5050' : 'https://recruitify-backend-f2zw.onrender.com'}${endpoint}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL || 'https://recruitify-backend-f2zw.onrender.com'}${endpoint}`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,

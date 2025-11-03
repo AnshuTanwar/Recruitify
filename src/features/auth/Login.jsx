@@ -85,7 +85,7 @@ function Login() {
 
   const handleGoogleLogin = () => {
     // Redirect to backend Google OAuth endpoint
-    window.location.href = `${import.meta.env.VITE_API_URL || 'http://localhost:5050'}/api/auth/google`;
+    window.location.href = `${import.meta.env.VITE_API_URL || 'https://recruitify-backend-f2zw.onrender.com'}/api/auth/google`;
   };
 
   return (
