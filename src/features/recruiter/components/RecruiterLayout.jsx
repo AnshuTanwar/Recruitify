@@ -37,20 +37,9 @@ const RecruiterLayout = ({ children }) => {
       </AnimatePresence>
 
       {/* Sidebar */}
-      <div className="hidden lg:block w-64 flex-shrink-0">
-        <RecruiterSidebar isMobileMenuOpen={isMobileMenuOpen} onMobileClose={() => setIsMobileMenuOpen(false)} />
-      </div>
-
-      {/* Mobile Sidebar */}
-      <AnimatePresence>
-        {isMobileMenuOpen && (
-          <div className="lg:hidden">
-            <RecruiterSidebar isMobileMenuOpen={isMobileMenuOpen} onMobileClose={() => setIsMobileMenuOpen(false)} />
-          </div>
-        )}
-      </AnimatePresence>
+      <RecruiterSidebar isMobileMenuOpen={isMobileMenuOpen} onMobileClose={() => setIsMobileMenuOpen(false)} />
       
-      <div className="flex-1 relative z-20 min-h-screen">
+      <div className="lg:ml-64 relative z-10 min-h-screen flex-1">
         <main className="p-3 sm:p-4 lg:p-6 pt-16 sm:pt-20 lg:pt-6">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
