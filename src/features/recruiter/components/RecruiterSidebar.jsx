@@ -90,7 +90,7 @@ const RecruiterSidebar = ({ isMobileMenuOpen, onMobileClose }) => {
       
       {/* Sidebar */}
       <motion.div
-        className={`fixed lg:static inset-y-0 left-0 z-50 lg:z-auto h-full w-64 bg-slate-900/95 backdrop-blur-md border-r border-white/10 flex flex-col transform transition-transform duration-300 ease-in-out ${
+        className={`fixed inset-y-0 left-0 z-50 h-full w-64 bg-slate-900/95 backdrop-blur-md border-r border-white/10 flex flex-col transform transition-transform duration-300 ease-in-out ${
           isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         }`}
         initial={false}
