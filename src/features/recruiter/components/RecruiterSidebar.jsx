@@ -99,27 +99,39 @@ const RecruiterSidebar = ({ isMobileMenuOpen, onMobileClose }) => {
       >
       {/* Logo Section */}
       <div className="p-3 sm:p-4 lg:p-6 border-b border-white/10 flex-shrink-0">
-        <motion.div
-          className="flex items-center space-x-3"
-          whileHover={{ scale: 1.02 }}
-          transition={{ duration: 0.3 }}
-        >
+        <div className="flex items-center justify-between">
           <motion.div
-            className="relative"
-            whileHover={{ rotate: 360 }}
-            transition={{ duration: 0.6, ease: 'easeInOut' }}
+            className="flex items-center space-x-3"
+            whileHover={{ scale: 1.02 }}
+            transition={{ duration: 0.3 }}
           >
-            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-gradient-to-br from-teal-500 to-purple-600 flex items-center justify-center shadow-lg shadow-teal-500/25">
-              <Zap className="w-4 h-4 sm:w-6 sm:h-6 text-white" />
+            <motion.div
+              className="relative"
+              whileHover={{ rotate: 360 }}
+              transition={{ duration: 0.6, ease: 'easeInOut' }}
+            >
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-gradient-to-br from-teal-500 to-purple-600 flex items-center justify-center shadow-lg shadow-teal-500/25">
+                <Zap className="w-4 h-4 sm:w-6 sm:h-6 text-white" />
+              </div>
+            </motion.div>
+            <div>
+              <h1 className="text-base sm:text-lg lg:text-xl font-bold bg-gradient-to-r from-white via-teal-200 to-purple-200 bg-clip-text text-transparent">
+                Recruitify
+              </h1>
+              <p className="text-xs text-white/60 -mt-1 hidden lg:block">AI-Powered Hiring</p>
             </div>
           </motion.div>
-          <div>
-            <h1 className="text-base sm:text-lg lg:text-xl font-bold bg-gradient-to-r from-white via-teal-200 to-purple-200 bg-clip-text text-transparent">
-              Recruitify
-            </h1>
-            <p className="text-xs text-white/60 -mt-1 hidden lg:block">AI-Powered Hiring</p>
-          </div>
-        </motion.div>
+          
+          {/* Close Button - Mobile Only */}
+          <motion.button
+            onClick={onMobileClose}
+            className="lg:hidden p-2 rounded-lg hover:bg-white/10 transition-colors"
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+          >
+            <X className="w-5 h-5 text-white/70" />
+          </motion.button>
+        </div>
       </div>
 
       {/* Dashboard Label */}
