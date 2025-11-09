@@ -318,6 +318,8 @@ const RecruiterMessages = () => {
               applicationId={selectedApplicationId}
               onClose={() => {
                 updateSelectedChat(null, null);
+                // Refresh chat list to remove the closed chat
+                fetchChatData();
               }}
             />
           ) : (

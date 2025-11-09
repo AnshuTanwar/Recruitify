@@ -214,7 +214,11 @@ const CandidateMessages = () => {
           {selectedRoomId ? (
             <CandidateChat
               roomId={selectedRoomId}
-              onClose={() => updateSelectedChat(null)}
+              onClose={() => {
+                updateSelectedChat(null);
+                // Refresh chat list to remove closed chats
+                fetchChatRooms();
+              }}
             />
           ) : (
             <div className="flex-1 flex items-center justify-center bg-gray-50">
