@@ -27,6 +27,7 @@ const JobAlerts = React.lazy(() => import('./features/candidate/pages/JobAlerts.
 const Messages = React.lazy(() => import('./features/candidate/pages/Messages.jsx'));
 const CandidateMessages = React.lazy(() => import('./features/candidate/pages/CandidateMessages.jsx'));
 const ResumeAnalyzerPage = React.lazy(() => import('./features/candidate/pages/ResumeAnalyzerPage.jsx'));
+const VoiceInterviewPage = React.lazy(() => import('./features/candidate/pages/VoiceInterviewPage.jsx'));
 const Help = React.lazy(() => import('./features/candidate/pages/Help.jsx'));
 const CompanyProfile = React.lazy(() => import('./features/candidate/pages/CompanyProfile.jsx'));
 
@@ -112,6 +113,7 @@ function App() {
           <Route path="/dashboard/applied-jobs/:id" element={<PrivateRoute requiredRole="candidate"><AppliedJobDetails /></PrivateRoute>} />
           <Route path="/dashboard/messages" element={<PrivateRoute requiredRole="candidate"><CandidateMessages /></PrivateRoute>} />
           <Route path="/dashboard/resume-analyzer" element={<PrivateRoute requiredRole="candidate"><ResumeAnalyzerPage /></PrivateRoute>} />
+          <Route path="/dashboard/ai-interview" element={<PrivateRoute requiredRole="candidate"><VoiceInterviewPage /></PrivateRoute>} />
           <Route path="/dashboard/profile" element={<PrivateRoute requiredRole="candidate"><CandidateProfile /></PrivateRoute>} />
           <Route path="/dashboard/job-alerts" element={<PrivateRoute requiredRole="candidate"><JobAlerts /></PrivateRoute>} />
           <Route path="/dashboard/help" element={<PrivateRoute requiredRole="candidate"><Help /></PrivateRoute>} />

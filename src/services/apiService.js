@@ -328,7 +328,39 @@ class ApiService {
     });
   }
 
+  static async startInterview(jobTitle, count = 6) {
+    return this.makeAuthenticatedRequest('/api/interview/start', {
+      method: 'POST',
+      body: JSON.stringify({ jobTitle, count }),
+    });
+  }
 
+  static async sendInterviewAnswer({ sessionId, questionIndex, question, answer }) {
+    return this.makeAuthenticatedRequest('/api/interview/answer', {
+      method: 'POST',
+      body: JSON.stringify({ sessionId, questionIndex, question, answer }),
+    });
+  }
+
+  static async endInterview(sessionId) {
+    return this.makeAuthenticatedRequest('/api/interview/end', {
+      method: 'POST',
+      body: JSON.stringify({ sessionId }),
+    });
+  }
+
+  static async getMyInterviewSessions(params = {}) {
+    const queryParams = new URLSearchParams();
+    if (params.page) queryParams.append('page', params.page);
+    if (params.limit) queryParams.append('limit', params.limit);
+    const queryString = queryParams.toString();
+    const url = `/api/interview/my${queryString ? `?${queryString}` : ''}`;
+    return this.makeAuthenticatedRequest(url);
+  }
+
+  static async getInterviewSessionById(sessionId) {
+    return this.makeAuthenticatedRequest(`/api/interview/${sessionId}`);
+  }
 
   // ==================== RECRUITER APIs ====================
   

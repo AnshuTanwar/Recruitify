@@ -15,7 +15,8 @@ import {
   HelpCircle,
   Zap,
   Search,
-  BarChart3
+  BarChart3,
+  Mic
 } from 'lucide-react';
 import { useAuth } from '../../../contexts/AuthContext.jsx';
 
@@ -52,6 +53,13 @@ function Sidebar({ isMobileMenuOpen, onMobileClose }) {
       name: 'Resume Analyzer',
       path: '/dashboard/resume-analyzer',
       icon: BarChart3,
+      count: null,
+      isNew: true
+    },
+    {
+      name: 'AI Voice Interview',
+      path: '/dashboard/ai-interview',
+      icon: Mic,
       count: null,
       isNew: true
     },
