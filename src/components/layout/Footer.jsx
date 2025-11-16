@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { 
   Zap, 
@@ -18,6 +18,42 @@ const Footer = () => {
     { name: 'Privacy Policy', href: '/privacy' },
     { name: 'API DOCS', href: 'https://recruitify-backend-f2zw.onrender.com/api-docs' },
   ];
+
+  const [deferredPrompt, setDeferredPrompt] = useState(null);
+  const [isInstallable, setIsInstallable] = useState(false);
+
+  useEffect(() => {
+    const handleBeforeInstallPrompt = (event) => {
+      event.preventDefault();
+      setDeferredPrompt(event);
+      setIsInstallable(true);
+    };
+
+    const handleAppInstalled = () => {
+      setDeferredPrompt(null);
+      setIsInstallable(false);
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    window.addEventListener('appinstalled', handleAppInstalled);
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+      window.removeEventListener('appinstalled', handleAppInstalled);
+    };
+  }, []);
+
+  const handleInstallClick = async () => {
+    if (!deferredPrompt) return;
+
+    deferredPrompt.prompt();
+    try {
+      await deferredPrompt.userChoice;
+    } finally {
+      setDeferredPrompt(null);
+      setIsInstallable(false);
+    }
+  };
 
   return (
     <footer className="relative bg-slate-900/95 backdrop-blur-md border-t border-white/10 mt-20">
@@ -77,7 +113,7 @@ const Footer = () => {
             })}
           </motion.div>
 
-          {/* Legal Links */}
+          {/* Legal Links + PWA Install */}
           <motion.div 
             className="flex items-center space-x-6"
             initial={{ opacity: 0, y: 20 }}
@@ -95,6 +131,18 @@ const Footer = () => {
                 {link.name}
               </motion.a>
             ))}
+
+            {isInstallable && (
+              <motion.button
+                type="button"
+                onClick={handleInstallClick}
+                className="px-3 py-1.5 rounded-full text-xs font-medium bg-teal-500/90 text-white shadow hover:bg-teal-400 transition-colors duration-300"
+                whileHover={{ y: -1 }}
+                whileTap={{ scale: 0.97 }}
+              >
+                Install App
+              </motion.button>
+            )}
           </motion.div>
         </div>
 
