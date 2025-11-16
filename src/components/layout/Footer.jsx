@@ -16,8 +16,7 @@ const Footer = () => {
 
   const legalLinks = [
     { name: 'Privacy Policy', href: '/privacy' },
-    { name: 'Terms of Service', href: '/terms' },
-    { name: 'API Docs', href: 'https://recruitify-backend-f2zw.onrender.com/api-docs' }
+    { name: 'API DOCS', href: 'https://recruitify-backend-f2zw.onrender.com/api-docs' },
   ];
 
   return (
