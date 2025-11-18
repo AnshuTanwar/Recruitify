@@ -111,6 +111,7 @@ const AppliedJobs = () => {
             </div>
             <div className="lg:hidden text-xs sm:text-sm font-medium text-gray-600">
               Applied Jobs
+            </div>
           </div>
 
           {/* Table Body */}
@@ -123,29 +124,16 @@ const AppliedJobs = () => {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.4, delay: index * 0.05 }}
               >
-                <div className="flex flex-col space-y-2 lg:grid lg:grid-cols-12 lg:gap-4 lg:items-center">
-                  <div className="flex items-start space-x-3">
-                    <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-teal-500 to-purple-600 flex items-center justify-center">
-                      <Briefcase className="w-5 h-5 text-white" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-gray-900 mb-1">{job.title}</h3>
-                      <div className="flex items-center space-x-4 text-sm text-gray-500">
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          job.type === 'Remote' ? 'bg-green-100 text-green-700' :
-                          job.type === 'Full Time' ? 'bg-blue-100 text-blue-700' :
-                          job.type === 'Temporary' ? 'bg-yellow-100 text-yellow-700' :
-                          'bg-purple-100 text-purple-700'
-                        }`}>
-                          {job.type}
-                        </span>
-                        <div className="flex items-center space-x-1">
-                          <MapPin className="w-3 h-3" />
-                          <span>{job.location}</span>
-                        </div>
-                        <div className="flex items-center space-x-1">
-                          <DollarSign className="w-3 h-3" />
-                          <span>{job.salary}</span>
+                {/* Desktop layout */}
+                <div className="hidden lg:grid grid-cols-12 gap-4 items-center">
+                  {/* Job Info */}
+                  <div className="col-span-4">
+                    <div className="flex items-start space-x-3">
+                      <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-teal-500 to-purple-600 flex items-center justify-center">
+                        <Briefcase className="w-5 h-5 text-white" />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-gray-900 mb-1">{job.title}</h3>
                         <div className="flex items-center space-x-4 text-sm text-gray-500">
                           <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                             job.type === 'Remote' ? 'bg-green-100 text-green-700' :
@@ -169,7 +157,7 @@ const AppliedJobs = () => {
                   </div>
 
                   {/* Date Applied */}
-                  <div className="col-span-2 mt-2 lg:mt-0">
+                  <div className="col-span-2">
                     <div className="flex items-center space-x-1 text-sm text-gray-600">
                       <Clock className="w-3 h-3" />
                       <span>{job.dateApplied}</span>
@@ -194,6 +182,61 @@ const AppliedJobs = () => {
                     >
                       View Details
                     </motion.button>
+                  </div>
+                </div>
+
+                {/* Mobile layout */}
+                <div className="lg:hidden">
+                  <div className="flex items-start space-x-3">
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-gradient-to-br from-teal-500 to-purple-600 flex items-center justify-center flex-shrink-0">
+                      <Briefcase className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between mb-2">
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-semibold text-gray-900 mb-1 truncate text-sm sm:text-base">{job.title}</h3>
+                          <p className="text-xs sm:text-sm text-gray-500 truncate">{job.company}</p>
+                          <div className="flex items-center space-x-2 mt-2">
+                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                              job.type === 'Remote' ? 'bg-green-100 text-green-700' :
+                              job.type === 'Full Time' ? 'bg-blue-100 text-blue-700' :
+                              job.type === 'Temporary' ? 'bg-yellow-100 text-yellow-700' :
+                              'bg-purple-100 text-purple-700'
+                            }`}>
+                              {job.type}
+                            </span>
+                            <div className="flex items-center space-x-1">
+                              <CheckCircle className="w-3 h-3 text-green-500" />
+                              <span className="text-xs font-medium text-green-600">{job.status}</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between text-xs text-gray-500 mb-3 space-y-1 sm:space-y-0">
+                        <div className="flex items-center space-x-3">
+                          <div className="flex items-center space-x-1">
+                            <MapPin className="w-3 h-3" />
+                            <span>{job.location}</span>
+                          </div>
+                          <div className="flex items-center space-x-1">
+                            <Clock className="w-3 h-3" />
+                            <span>{job.dateApplied}</span>
+                          </div>
+                        </div>
+                        <div className="flex items-center space-x-1">
+                          <DollarSign className="w-3 h-3" />
+                          <span>{job.salary}</span>
+                        </div>
+                      </div>
+                      <motion.button
+                        onClick={() => navigate(`/dashboard/applied-jobs/${job.id}`)}
+                        className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 sm:py-2.5 rounded-lg text-sm font-medium transition-colors duration-300"
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                      >
+                        View Details
+                      </motion.button>
+                    </div>
                   </div>
                 </div>
               </motion.div>
