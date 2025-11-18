@@ -15,6 +15,7 @@ const RecruiterMessages = () => {
   const [loading, setLoading] = useState(false);
   const [applications, setApplications] = useState([]);
   const [showNewChatModal, setShowNewChatModal] = useState(false);
+  const [isMobileView, setIsMobileView] = useState(false);
 
   // Helper function to update selected chat with persistence
   const updateSelectedChat = (roomId, applicationId) => {
@@ -76,6 +77,18 @@ const RecruiterMessages = () => {
 
   useEffect(() => {
     fetchChatData();
+  }, []);
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (typeof window !== 'undefined') {
+        setIsMobileView(window.innerWidth < 768);
+      }
+    };
+
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   // Update active states when selectedRoomId changes
@@ -211,138 +224,142 @@ const RecruiterMessages = () => {
     <RecruiterLayout>
       <div className="h-[calc(100vh-8rem)] flex bg-white rounded-lg shadow-lg overflow-hidden">
         {/* Chat List Sidebar */}
-        <div className="w-1/3 border-r border-gray-200 flex flex-col">
-          {/* Header */}
-          <div className="p-4 border-b border-gray-200">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-semibold text-gray-900">Messages</h2>
-              <button
-                onClick={() => setShowNewChatModal(true)}
-                className="flex items-center space-x-1 px-3 py-1 bg-green-100 text-green-700 rounded-full hover:bg-green-200 text-sm"
-              >
-                <Plus className="h-4 w-4" />
-                <span>New Chat</span>
-              </button>
-            </div>
-            
-            {/* Search */}
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Search conversations..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-              />
-            </div>
-          </div>
-
-          {/* Chat List */}
-          <div className="flex-1 overflow-y-auto">
-            {loading ? (
-              <div className="flex items-center justify-center p-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
-              </div>
-            ) : filteredChats.length === 0 ? (
-              <div className="flex flex-col items-center justify-center p-8 text-center">
-                <MessageCircle className="h-12 w-12 text-gray-300 mb-4" />
-                <p className="text-gray-500 mb-2">No conversations yet</p>
+        {(!isMobileView || !selectedRoomId) && (
+          <div className={`${isMobileView ? 'w-full' : 'w-1/3'} border-r border-gray-200 flex flex-col`}>
+            {/* Header */}
+            <div className="p-4 border-b border-gray-200">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-semibold text-gray-900">Messages</h2>
                 <button
                   onClick={() => setShowNewChatModal(true)}
-                  className="flex items-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                  className="flex items-center space-x-1 px-3 py-1 bg-green-100 text-green-700 rounded-full hover:bg-green-200 text-sm"
                 >
                   <Plus className="h-4 w-4" />
-                  <span>Start New Chat</span>
+                  <span>New Chat</span>
                 </button>
               </div>
-            ) : (
-              <div className="divide-y divide-gray-100">
-                {filteredChats.map((chat) => (
-                  <div
-                    key={chat.id}
-                    onClick={() => handleChatSelect(chat)}
-                    className={`p-4 cursor-pointer hover:bg-gray-50 transition-colors ${
-                      selectedRoomId === chat.id ? 'bg-green-50 border-r-2 border-green-500' : ''
-                    }`}
+              
+              {/* Search */}
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Search conversations..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                />
+              </div>
+            </div>
+
+            {/* Chat List */}
+            <div className="flex-1 overflow-y-auto">
+              {loading ? (
+                <div className="flex items-center justify-center p-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
+                </div>
+              ) : filteredChats.length === 0 ? (
+                <div className="flex flex-col items-center justify-center p-8 text-center">
+                  <MessageCircle className="h-12 w-12 text-gray-300 mb-4" />
+                  <p className="text-gray-500 mb-2">No conversations yet</p>
+                  <button
+                    onClick={() => setShowNewChatModal(true)}
+                    className="flex items-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
                   >
-                    <div className="flex items-start space-x-3">
-                      <div className="w-10 h-10 bg-gradient-to-r from-green-500 to-blue-600 rounded-full flex items-center justify-center flex-shrink-0">
-                        <User className="h-5 w-5 text-white" />
-                      </div>
-                      
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between">
-                          <p className="text-sm font-medium text-gray-900 truncate">
-                            {chat.candidateName}
-                          </p>
-                          <span className="text-xs text-gray-500">
-                            {formatTime(chat.lastMessageTime)}
-                          </span>
+                    <Plus className="h-4 w-4" />
+                    <span>Start New Chat</span>
+                  </button>
+                </div>
+              ) : (
+                <div className="divide-y divide-gray-100">
+                  {filteredChats.map((chat) => (
+                    <div
+                      key={chat.id}
+                      onClick={() => handleChatSelect(chat)}
+                      className={`p-4 cursor-pointer hover:bg-gray-50 transition-colors ${
+                        selectedRoomId === chat.id ? 'bg-green-50 border-r-2 border-green-500' : ''
+                      }`}
+                    >
+                      <div className="flex items-start space-x-3">
+                        <div className="w-10 h-10 bg-gradient-to-r from-green-500 to-blue-600 rounded-full flex items-center justify-center flex-shrink-0">
+                          <User className="h-5 w-5 text-white" />
                         </div>
                         
-                        <p className="text-xs text-gray-500 truncate mt-1">
-                          {chat.candidateEmail}
-                        </p>
-                        
-                        <p className="text-sm text-green-600 font-medium truncate mt-1">
-                          {chat.jobTitle}
-                        </p>
-                        
-                        <p className="text-sm text-gray-600 truncate mt-1">
-                          {chat.lastMessage}
-                        </p>
-                        
-                        {chat.unreadCount > 0 && (
-                          <div className="flex items-center justify-between mt-2">
-                            <span></span>
-                            <span className="bg-green-500 text-white text-xs px-2 py-1 rounded-full">
-                              {chat.unreadCount}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between">
+                            <p className="text-sm font-medium text-gray-900 truncate">
+                              {chat.candidateName}
+                            </p>
+                            <span className="text-xs text-gray-500">
+                              {formatTime(chat.lastMessageTime)}
                             </span>
                           </div>
-                        )}
+                          
+                          <p className="text-xs text-gray-500 truncate mt-1">
+                            {chat.candidateEmail}
+                          </p>
+                          
+                          <p className="text-sm text-green-600 font-medium truncate mt-1">
+                            {chat.jobTitle}
+                          </p>
+                          
+                          <p className="text-sm text-gray-600 truncate mt-1">
+                            {chat.lastMessage}
+                          </p>
+                          
+                          {chat.unreadCount > 0 && (
+                            <div className="flex items-center justify-between mt-2">
+                              <span></span>
+                              <span className="bg-green-500 text-white text-xs px-2 py-1 rounded-full">
+                                {chat.unreadCount}
+                              </span>
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Chat Area */}
+        {(!isMobileView || selectedRoomId) && (
+          <div className="flex-1 flex flex-col">
+            {selectedRoomId ? (
+              <RecruiterChat
+                roomId={selectedRoomId}
+                applicationId={selectedApplicationId}
+                onClose={() => {
+                  updateSelectedChat(null, null);
+                  // Refresh chat list to remove the closed chat
+                  fetchChatData();
+                }}
+              />
+            ) : (
+              <div className="flex-1 flex items-center justify-center bg-gray-50">
+                <div className="text-center">
+                  <MessageCircle className="mx-auto h-16 w-16 text-gray-300 mb-4" />
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">
+                    Welcome to Messages
+                  </h3>
+                  <p className="text-gray-500 mb-4">
+                    Select a conversation or start a new chat with candidates
+                  </p>
+                  <button
+                    onClick={() => setShowNewChatModal(true)}
+                    className="flex items-center space-x-2 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 mx-auto"
+                  >
+                    <Plus className="h-5 w-5" />
+                    <span>Start New Chat</span>
+                  </button>
+                </div>
               </div>
             )}
           </div>
-        </div>
-
-        {/* Chat Area */}
-        <div className="flex-1 flex flex-col">
-          {selectedRoomId ? (
-            <RecruiterChat
-              roomId={selectedRoomId}
-              applicationId={selectedApplicationId}
-              onClose={() => {
-                updateSelectedChat(null, null);
-                // Refresh chat list to remove the closed chat
-                fetchChatData();
-              }}
-            />
-          ) : (
-            <div className="flex-1 flex items-center justify-center bg-gray-50">
-              <div className="text-center">
-                <MessageCircle className="mx-auto h-16 w-16 text-gray-300 mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">
-                  Welcome to Messages
-                </h3>
-                <p className="text-gray-500 mb-4">
-                  Select a conversation or start a new chat with candidates
-                </p>
-                <button
-                  onClick={() => setShowNewChatModal(true)}
-                  className="flex items-center space-x-2 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 mx-auto"
-                >
-                  <Plus className="h-5 w-5" />
-                  <span>Start New Chat</span>
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
+        )}
       </div>
 
       {/* New Chat Modal */}

@@ -11,6 +11,7 @@ const CandidateMessages = () => {
   const [selectedRoomId, setSelectedRoomId] = useState(searchParams.get('roomId') || localStorage.getItem('candidateSelectedRoomId') || null);
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(false);
+  const [isMobileView, setIsMobileView] = useState(false);
 
   // Helper function to update selected chat with persistence
   const updateSelectedChat = (roomId) => {
@@ -58,6 +59,18 @@ const CandidateMessages = () => {
 
   useEffect(() => {
     fetchChatRooms();
+  }, []);
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (typeof window !== 'undefined') {
+        setIsMobileView(window.innerWidth < 768);
+      }
+    };
+
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   // Sync URL parameters with state
@@ -117,129 +130,133 @@ const CandidateMessages = () => {
     <DashboardLayout>
       <div className="h-[calc(100vh-8rem)] flex bg-white rounded-lg shadow-lg overflow-hidden">
         {/* Chat List Sidebar */}
-        <div className="w-1/3 border-r border-gray-200 flex flex-col">
-          {/* Header */}
-          <div className="p-4 border-b border-gray-200">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-semibold text-gray-900">Messages</h2>
-              <MessageCircle className="h-6 w-6 text-blue-600" />
+        {(!isMobileView || !selectedRoomId) && (
+          <div className={`${isMobileView ? 'w-full' : 'w-1/3'} border-r border-gray-200 flex flex-col`}>
+            {/* Header */}
+            <div className="p-4 border-b border-gray-200">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-semibold text-gray-900">Messages</h2>
+                <MessageCircle className="h-6 w-6 text-blue-600" />
+              </div>
+              
+              {/* Search */}
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Search conversations..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
             </div>
-            
-            {/* Search */}
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Search conversations..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-            </div>
-          </div>
 
-          {/* Chat List */}
-          <div className="flex-1 overflow-y-auto">
-            {loading ? (
-              <div className="flex items-center justify-center p-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-              </div>
-            ) : filteredChats.length === 0 ? (
-              <div className="flex flex-col items-center justify-center p-8 text-center">
-                <MessageCircle className="h-12 w-12 text-gray-300 mb-4" />
-                <p className="text-gray-500 mb-2">No conversations yet</p>
-                <p className="text-sm text-gray-400">
-                  Conversations will appear here when recruiters contact you about your applications
-                </p>
-              </div>
-            ) : (
-              <div className="divide-y divide-gray-100">
-                {filteredChats.map((chat) => (
-                  <div
-                    key={chat.id}
-                    onClick={() => handleChatSelect(chat)}
-                    className={`p-4 cursor-pointer hover:bg-gray-50 transition-colors ${
-                      selectedRoomId === chat.id ? 'bg-blue-50 border-r-2 border-blue-500' : ''
-                    }`}
-                  >
-                    <div className="flex items-start space-x-3">
-                      <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center flex-shrink-0">
-                        <User className="h-5 w-5 text-white" />
-                      </div>
-                      
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between">
-                          <p className="text-sm font-medium text-gray-900 truncate">
-                            {chat.recruiterName}
-                          </p>
-                          <span className="text-xs text-gray-500">
-                            {formatTime(chat.lastMessageTime)}
-                          </span>
+            {/* Chat List */}
+            <div className="flex-1 overflow-y-auto">
+              {loading ? (
+                <div className="flex items-center justify-center p-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                </div>
+              ) : filteredChats.length === 0 ? (
+                <div className="flex flex-col items-center justify-center p-8 text-center">
+                  <MessageCircle className="h-12 w-12 text-gray-300 mb-4" />
+                  <p className="text-gray-500 mb-2">No conversations yet</p>
+                  <p className="text-sm text-gray-400">
+                    Conversations will appear here when recruiters contact you about your applications
+                  </p>
+                </div>
+              ) : (
+                <div className="divide-y divide-gray-100">
+                  {filteredChats.map((chat) => (
+                    <div
+                      key={chat.id}
+                      onClick={() => handleChatSelect(chat)}
+                      className={`p-4 cursor-pointer hover:bg-gray-50 transition-colors ${
+                        selectedRoomId === chat.id ? 'bg-blue-50 border-r-2 border-blue-500' : ''
+                      }`}
+                    >
+                      <div className="flex items-start space-x-3">
+                        <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center flex-shrink-0">
+                          <User className="h-5 w-5 text-white" />
                         </div>
                         
-                        <div className="flex items-center space-x-1 mt-1">
-                          <Building2 className="h-3 w-3 text-gray-400" />
-                          <p className="text-xs text-gray-500 truncate">
-                            {chat.companyName}
-                          </p>
-                        </div>
-                        
-                        <p className="text-sm text-blue-600 font-medium truncate mt-1">
-                          {chat.jobTitle}
-                        </p>
-                        
-                        <p className="text-sm text-gray-600 truncate mt-1">
-                          {chat.lastMessage}
-                        </p>
-                        
-                        {chat.unreadCount > 0 && (
-                          <div className="flex items-center justify-between mt-2">
-                            <span></span>
-                            <span className="bg-blue-500 text-white text-xs px-2 py-1 rounded-full">
-                              {chat.unreadCount}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between">
+                            <p className="text-sm font-medium text-gray-900 truncate">
+                              {chat.recruiterName}
+                            </p>
+                            <span className="text-xs text-gray-500">
+                              {formatTime(chat.lastMessageTime)}
                             </span>
                           </div>
-                        )}
+                          
+                          <div className="flex items-center space-x-1 mt-1">
+                            <Building2 className="h-3 w-3 text-gray-400" />
+                            <p className="text-xs text-gray-500 truncate">
+                              {chat.companyName}
+                            </p>
+                          </div>
+                          
+                          <p className="text-sm text-blue-600 font-medium truncate mt-1">
+                            {chat.jobTitle}
+                          </p>
+                          
+                          <p className="text-sm text-gray-600 truncate mt-1">
+                            {chat.lastMessage}
+                          </p>
+                          
+                          {chat.unreadCount > 0 && (
+                            <div className="flex items-center justify-between mt-2">
+                              <span></span>
+                              <span className="bg-blue-500 text-white text-xs px-2 py-1 rounded-full">
+                                {chat.unreadCount}
+                              </span>
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Chat Area */}
+        {(!isMobileView || selectedRoomId) && (
+          <div className="flex-1 flex flex-col">
+            {selectedRoomId ? (
+              <CandidateChat
+                roomId={selectedRoomId}
+                onClose={() => {
+                  updateSelectedChat(null);
+                  // Refresh chat list to remove closed chats
+                  fetchChatRooms();
+                }}
+              />
+            ) : (
+              <div className="flex-1 flex items-center justify-center bg-gray-50">
+                <div className="text-center">
+                  <MessageCircle className="mx-auto h-16 w-16 text-gray-300 mb-4" />
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">
+                    Welcome to Messages
+                  </h3>
+                  <p className="text-gray-500 mb-4">
+                    Select a conversation to start chatting with recruiters
+                  </p>
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 max-w-md">
+                    <p className="text-sm text-blue-800">
+                      💡 <strong>Tip:</strong> Recruiters can start conversations with you based on your job applications. 
+                      Make sure your profile is complete to attract more opportunities!
+                    </p>
                   </div>
-                ))}
+                </div>
               </div>
             )}
           </div>
-        </div>
-
-        {/* Chat Area */}
-        <div className="flex-1 flex flex-col">
-          {selectedRoomId ? (
-            <CandidateChat
-              roomId={selectedRoomId}
-              onClose={() => {
-                updateSelectedChat(null);
-                // Refresh chat list to remove closed chats
-                fetchChatRooms();
-              }}
-            />
-          ) : (
-            <div className="flex-1 flex items-center justify-center bg-gray-50">
-              <div className="text-center">
-                <MessageCircle className="mx-auto h-16 w-16 text-gray-300 mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">
-                  Welcome to Messages
-                </h3>
-                <p className="text-gray-500 mb-4">
-                  Select a conversation to start chatting with recruiters
-                </p>
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 max-w-md">
-                  <p className="text-sm text-blue-800">
-                    💡 <strong>Tip:</strong> Recruiters can start conversations with you based on your job applications. 
-                    Make sure your profile is complete to attract more opportunities!
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
+        )}
       </div>
     </DashboardLayout>
   );

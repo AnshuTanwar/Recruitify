@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { MessageCircle, Send, Bot, User, Clock, CheckCheck, Lightbulb } from 'lucide-react';
+import { MessageCircle, Send, Bot, User, Clock, CheckCheck, Lightbulb, ChevronLeft } from 'lucide-react';
 import ApiService from '../../../services/apiService';
 import socketService from '../../../services/socketService';
 
@@ -189,6 +189,12 @@ const RecruiterChat = ({ roomId, applicationId, onClose }) => {
       {/* Chat Header */}
       <div className="flex items-center justify-between p-4 border-b bg-green-50">
         <div className="flex items-center space-x-3">
+          <button
+            onClick={onClose}
+            className="md:hidden mr-2 p-2 rounded-full bg-white text-gray-600 hover:bg-gray-100"
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </button>
           <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center">
             <User className="h-6 w-6 text-white" />
           </div>
@@ -210,7 +216,7 @@ const RecruiterChat = ({ roomId, applicationId, onClose }) => {
           </button>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 text-xl font-bold"
+            className="hidden md:block text-gray-400 hover:text-gray-600 text-xl font-bold"
           >
             ×
           </button>
