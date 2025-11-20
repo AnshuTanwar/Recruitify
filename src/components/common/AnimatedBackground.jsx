@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 const AnimatedBackground = () => {
   const particles = Array.from({ length: (typeof window !== 'undefined' && window.innerWidth < 768) ? 25 : 50 }, (_, i) => i);
 
-  return (
+  return ( 
     <div className="fixed inset-0 -z-10">
       {/* Gradient Background */}
       <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-purple-800 to-sky-400" />
