@@ -69,7 +69,7 @@ const Help = () => {
       answer: 'Yes! You can upload multiple versions of your resume for different types of positions. Go to Profile > Documents to manage your resumes and cover letters.'
     }
   ];
-
+                  
   const quickLinks = [
     {
       title: 'Video Tutorials',
