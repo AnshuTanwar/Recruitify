@@ -10,7 +10,7 @@ import {
   MapPin, 
   Briefcase,
   GraduationCap,
-  Calendar,
+  Calendar, 
   Globe,
   ArrowLeft,
   CheckCircle,
