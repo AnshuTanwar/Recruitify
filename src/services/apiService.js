@@ -5,7 +5,7 @@
 
 // Use local backend in development, deployed backend in production
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://recruitify-backend-f2zw.onrender.com';
-
+  
 class ApiService {
   // Helper method to make API calls
   static async makeRequest(endpoint, options = {}) {
