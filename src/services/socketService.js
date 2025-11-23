@@ -1,5 +1,5 @@
 import { io } from 'socket.io-client';
-
+  
 class SocketService {
     constructor() {
         this.socket = null;
