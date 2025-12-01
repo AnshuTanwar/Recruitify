@@ -267,8 +267,10 @@ MONGO_URI=your_mongodb_connection_string
 JWT_SECRET=your_access_token_secret
 JWT_REFRESH_SECRET=your_refresh_token_secret
 
-# Client
-CLIENT_ORIGINS=http://localhost:5173,yourclienturl
+# Client / CORS / Redirects
+CLIENT_ORIGINS=http://localhost:5173,client-url
+CLIENT_URL=http://localhost:5173          # Used for Google OAuth success redirect
+CLIENT_URI=http://localhost:5173          # Used for password reset links
 
 # Google OAuth
 GOOGLE_CLIENT_ID=your_google_client_id
@@ -367,6 +369,7 @@ The OpenAPI spec ([openapi.yaml](cci:7://file:///Users/aanshutanwar/Developer/Re
 
 This project includes a `LICENSE` file in the repository root.  
 Please refer to that file for the exact license terms.
+
 
 
 
