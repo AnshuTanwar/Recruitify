@@ -1,5 +1,5 @@
 import { io } from 'socket.io-client';
-  
+
 class SocketService {
     constructor() {
         this.socket = null;
@@ -12,7 +12,7 @@ class SocketService {
             return Promise.resolve(this.socket);
         }
 
-        const SOCKET_URL = import.meta.env.VITE_API_URL || 'https://recruitify-backend-f2zw.onrender.com';
+        const SOCKET_URL = import.meta.env.VITE_API_URL;
         console.log('Connecting to socket:', SOCKET_URL);
         console.log('Using token:', token ? 'Token present' : 'NO TOKEN!');
 

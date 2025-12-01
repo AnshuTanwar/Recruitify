@@ -142,7 +142,7 @@ export const AuthProvider = ({ children }) => {
     
     setUser(userData);
     setIsAuthenticated(true);
-    console.log('✅ User logged in:', userData);
+    console.log('✅ User logged in');
   };
 
   const logout = async () => {
