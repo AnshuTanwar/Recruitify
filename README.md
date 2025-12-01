@@ -268,7 +268,7 @@ JWT_SECRET=your_access_token_secret
 JWT_REFRESH_SECRET=your_refresh_token_secret
 
 # Client
-CLIENT_URI=http://localhost:5173
+CLIENT_ORIGINS=http://localhost:5173,yourclienturl
 
 # Google OAuth
 GOOGLE_CLIENT_ID=your_google_client_id
@@ -296,9 +296,16 @@ REDIS_PASSWORD=...
 # Gemini / AI
 GEMINI_API_KEY=your_gemini_key
 GEMINI_MODEL=your_model_name
-```
 
-Do not commit real secret values to Git.
+# Seed Admin
+ADMIN_NAME=demo
+ADMIN_EMAIL=demo@email.com
+ADMIN_PASSWORD=Admin@123
+
+# Environment variables for frontend in Recruitify/.env :
+VITE_SOCKET_URL=your-backend-url
+VITE_API_URL=your-backend-url
+```
 
 ---
 
@@ -360,6 +367,7 @@ The OpenAPI spec ([openapi.yaml](cci:7://file:///Users/aanshutanwar/Developer/Re
 
 This project includes a `LICENSE` file in the repository root.  
 Please refer to that file for the exact license terms.
+
 
 
 
