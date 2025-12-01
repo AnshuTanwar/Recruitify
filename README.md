@@ -204,11 +204,11 @@ Backend repository:
 
 ```bash
 # Frontend
-git clone https://github.com/AnshuTanwar/Recruitify.git
+git clone https://github.com/AnshuTanwar/Recruitify
 cd Recruitify
 
 # Backend (in a separate folder)
-git clone https://github.com/AnshuTanwar/Recruitify-Backend.git
+git clone https://github.com/AnshuTanwar/Recruitify-Backend
 cd Recruitify-Backend
 ```
 
@@ -360,5 +360,6 @@ The OpenAPI spec ([openapi.yaml](cci:7://file:///Users/aanshutanwar/Developer/Re
 
 This project includes a `LICENSE` file in the repository root.  
 Please refer to that file for the exact license terms.
+
 
 
